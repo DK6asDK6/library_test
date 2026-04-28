@@ -17,7 +17,7 @@ const router = express.Router();
 const User = require('../models/user');
 const { validateUser, validationHandler } = require('../middleware/validation');
 
-// Создание пользователя
+// User creation
 router.post('/', validateUser, validationHandler, async (req, res, next) => {
     try {
         const user = new User(req.body);
@@ -32,7 +32,7 @@ router.post('/', validateUser, validationHandler, async (req, res, next) => {
     }
 });
 
-// Получение всех пользователей
+// Get all users
 router.get('/', async (req, res, next) => {
     try {
         const users = await User.find().select('-password');
@@ -43,6 +43,7 @@ router.get('/', async (req, res, next) => {
     }
 });
 
+// User log in
 router.post('/login', async (req, res, next) => {
     try{
         const { login, password } = req.body;

@@ -17,7 +17,7 @@ const router = express.Router();
 const Post = require('../models/post');
 const { validatePost, validationHandler } = require('../middleware/validation');
 
-// Создание поста
+// Post creation
 router.post('/', validatePost, validationHandler, async (req, res, next) => {
     try {
         const post = new Post(req.body);
@@ -29,7 +29,7 @@ router.post('/', validatePost, validationHandler, async (req, res, next) => {
     }
 });
 
-// Получение всех постов с заполнением данных отправителя
+// Get all posts
 router.get('/', async (req, res) => {
     try {
         const posts = await Post.find()
@@ -42,7 +42,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Получение поста по ID
+// Get post with mentioned ID
 router.get('/:id', async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.id)
@@ -60,7 +60,7 @@ router.get('/:id', async (req, res, next) => {
     }
 });
 
-// Обновление поста
+// Post updating
 router.put('/:id', validatePost, validationHandler, async (req, res, next) => {
     try {
         const post = await Post.findByIdAndUpdate(
@@ -80,7 +80,7 @@ router.put('/:id', validatePost, validationHandler, async (req, res, next) => {
     }
 });
 
-// Удаление поста
+// Post deleting
 router.delete('/:id', async (req, res, next) => {
     try {
         const post = await Post.findByIdAndDelete(req.params.id);
