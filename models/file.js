@@ -1,3 +1,11 @@
+/*
+ * File collection model file
+ * IMPORTS:
+ *  - mongoose - library for creating structured models
+ * EXPORTS:
+ *  - File - schema for 'files' collection
+ */
+
 const mongoose = require('mongoose');
 
 const fileSchema = new mongoose.Schema({
@@ -8,3 +16,7 @@ const fileSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model('File', fileSchema);
+
+/*
+ * END OF 'file.js' FILE
+ */

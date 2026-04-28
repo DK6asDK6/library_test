@@ -1,4 +1,14 @@
+/*
+ * User collection model file
+ * IMPORTS:
+ *  - mongoose - library for creating structured models
+ *  - bcrypt - library for hashing passwords
+ * EXPORTS:
+ *  - User - schema for 'users' collection
+ */
+
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
     login: {
@@ -25,4 +35,23 @@ const userSchema = new mongoose.Schema({
     }
     }, { timestamps: true });
 
+userSchema.pre('save', async function () {
+   if (!this.isModified('password')) return;
+
+   try {
+       const salt = await bcrypt.genSalt(10);
+       this.password = await bcrypt.hash(this.password, salt);
+   }catch(err) {
+       throw err;
+   }
+});
+
+userSchema.methods.isValidPassword = async function (password) {
+    return bcrypt.compare(password, this.password);
+}
+
 module.exports = mongoose.model('User', userSchema);
+
+/*
+ * END OF 'user.js' FILE
+ */

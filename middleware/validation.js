@@ -1,4 +1,15 @@
-const {body, param, validationResult} = require('express-validator');
+/*
+ * Request validation file
+ * IMPORTS:
+ *  - from express-validator:
+ *      - body: database collection field requirement
+ *      - validationResult - function; returns errors array
+ * EXPORTS:
+ *  - validateUser, validatePost, validateFile - database collections' requirements
+ *  - validationHandler - function to check validation, returns error code.
+ */
+
+const {body, validationResult} = require('express-validator');
 
 const validateUser = [
     body('login')
@@ -43,7 +54,7 @@ const validationHandler = (req, res, next) => {
         })
     }
     next();
-}
+};
 
 module.exports = {
   validateUser,
@@ -51,3 +62,7 @@ module.exports = {
   validateFile,
   validationHandler
 };
+
+/*
+ * END OF 'validation.js' FILE
+ */

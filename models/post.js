@@ -1,3 +1,11 @@
+/*
+ * Posts collection model file
+ * IMPORTS:
+ *  - mongoose - library for creating structured models
+ * EXPORTS:
+ *  - Post - schema for 'posts' collection
+ */
+
 const mongoose = require('mongoose');
 
 const postSchema = new mongoose.Schema({
@@ -20,3 +28,7 @@ const postSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model('Post', postSchema);
+
+/*
+ * END OF 'post.js' FILE
+ */

@@ -1,5 +1,21 @@
+/*
+ * Main server file
+ * IMPORTS:
+ *  - dotenv:
+ *  - express
+ *  - mongoose
+ *  - from routes/users:
+ *      - userRoutes: user authentification functions
+ *  - from routes/posts:
+ *      - postRoutes: post managing functions
+ *  - from routes/files:
+ *      - fileRoutes: file managing functions
+ * EXPORTS: None.
+ */
+
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const mongoose = require('mongoose');
 
 const userRoutes = require('./routes/users');
@@ -9,38 +25,43 @@ const fileRoutes = require('./routes/files');
 const app = express();
 
 // Middleware
+app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 
-// Подключение к MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => {
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI, {}).then(() => {
     console.log('Connected to MongoDB');
 }).catch(err => {
     console.error('MongoDB connection error:', err);
 });
 
-// Регистрация маршрутов
+// API routes registration
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/files', fileRoutes);
 
-// Базовый маршрут
+
+
+// Basic route
 app.get('/', (req, res) => {
     res.send('Node.js + MongoDB server is running!');
 });
 
-// Обработка 404
+
+// Error 404 handling
 /*
 app.use('*', (req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
-
 */
 
-// Запуск сервера
+// Server launching
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+/*
+ * END OF 'server.js' FILE
+ */
