@@ -8,6 +8,15 @@
 
 const mongoose = require('mongoose');
 
+/*
+ * Post schema structure
+ * Fields:
+ *  - sender_id - sender ID, referred to 'User' schema
+ *  - title - post's title, up to 200 symbols
+ *  - text - inner text (if exists).
+ *  - link - link to Web Archive page (if exists)
+ *  - files_id - array of files IDs, referred to 'File' schema
+ */
 const postSchema = new mongoose.Schema({
     sender_id: {
         type: mongoose.Schema.Types.ObjectId,

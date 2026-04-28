@@ -10,6 +10,15 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
+/*
+ * User schema structure
+ * Fields:
+ *  - login - username. Contains string 5-30 characters length, has to be unique
+ *  - password - user's hashed password
+ *  - access - user's access to posts and editing them.
+ *             0 - guest (unregistered), 1 - moderator (common registered), 2 - admin.
+ *             on register, access is 1, can be changed only by admin
+ */
 const userSchema = new mongoose.Schema({
     login: {
         type: String,

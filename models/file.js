@@ -8,6 +8,11 @@
 
 const mongoose = require('mongoose');
 
+/*
+ * File schema structure
+ * Fields:
+ *  - file - file buffer
+ */
 const fileSchema = new mongoose.Schema({
     file: {
         type: Buffer,
