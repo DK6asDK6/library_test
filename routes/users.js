@@ -17,33 +17,67 @@ const router = express.Router();
 const User = require('../models/user');
 const { validateUser, validationHandler } = require('../middleware/validation');
 
-// User creation
+
+const DEFAULT_PASSWORD = 'SUAIisBEST';
+
+/*
+ * User register request
+ * Request body:
+ *  - login: user's 'login' field
+ *  - password: user's 'password' field
+ * Response (if registered successfully):
+ *  - message
+ *  - user: structure with fields 'id' and 'login'
+ */
 router.post('/', validateUser, validationHandler, async (req, res, next) => {
     try {
         const user = new User(req.body);
         await user.save();
-        res.status(201).json(user);
+        res.status(201).json({
+            message: 'Success',
+            user: {
+                _id: user._id,
+                login: user.login
+            }});
     } catch (error) {
         if (error.code === 11000) {
             return res.status(400).json({ error: 'User already exists' });
         }
         next(error);
-        // res.status(400).json({ error: error.message });
     }
 });
 
-// Get all users
+/*
+ * Get all users request (only admins allowed)
+ * Request body:
+ *  - _id - user's id
+ * Response body:
+ *  - users: array of structures with 'login' and 'access' fields
+ */
 router.get('/', async (req, res, next) => {
     try {
-        const users = await User.find().select('-password');
-        res.json(users);
+        const user = await User.findOne({_id: req.body._id});
+
+        if (user != null && user.access === 2) {
+            const users = await User.find({}, {_id: 0, password: 0});
+            res.json(users);
+        } else {
+            return res.status(404).json({error: 'Access forbidden'});
+        }
     } catch (error) {
         next(error);
-        // res.status(500).json({ error: error.message });
     }
 });
 
-// User log in
+/*
+ * User log in request
+ * Request body:
+ *  - login: user's login
+ *  - password: user's password
+ * Response body (if logged in successfully):
+ *  - _id: user's ID
+ *  - login: user's login
+ */
 router.post('/login', async (req, res, next) => {
     try{
         const { login, password } = req.body;
@@ -57,19 +91,118 @@ router.post('/login', async (req, res, next) => {
         if (!isValid) return res.status(400).json({ error: 'Incorrect password or login' });
 
         res.json({
-            message: 'Authenticated successfully',
+            message: 'Success',
             user: {
                 _id: user._id,
                 login: user.login,
-                access: user.access
             }
         })
 
     } catch (error) {
         next(error);
-        // res.status(500).json({ error: error.message });
     }
 });
+
+/*
+ * Access set request (only admins allowed)
+ * Request body:
+ *  - ad_id: Administrator ID
+ *  - us_login: user's login
+ *  - s_acc: new access level
+ * Responce body:
+ *  - message
+ */
+router.post('/access', async (req, res, next) => {
+    try{
+        const {ad_id, us_login, s_acc} = req.body;
+
+        const admin = User.findById(ad_id);
+
+        if (admin != null && admin.access === 2) {
+            User.updateOne({
+                login: us_login},
+                {
+                    $set: {
+                        access: s_acc
+                    }
+                });
+
+            res.status(200).json({message: 'Success'});
+        } else {
+            return res.status(404).json({error: 'Access forbidden'});
+        }
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+/*
+ * Password reset request:
+ * Request body:
+ *  - id: user's ID
+ *  - pwd: old password
+ *  - new_pwd: new password
+ * Response body:
+ *  - message
+ */
+router.post('/reset', async (req, res, next) => {
+   try{
+       const {id, pwd, new_pwd} = req.body;
+
+       if (!pwd || !new_pwd)
+           return res.status(400).json({ error: 'Old and new passwords required' });
+
+       const user = await User.findById(id);
+
+       if (!user)
+           return res.status(404).json({ error: 'Failed to find user' });
+
+       const isValid = await User.isValidPassword(pwd);
+       if (!isValid)
+           return res.status(404).json({ error: 'Incorrect password' });
+
+       user.password = new_pwd;
+       await user.save();
+
+       res.status(200).json({message: 'Success'});
+
+   } catch (error) {
+       next(error);
+   }
+});
+
+
+/*
+ * Password reset request (admins only)
+ * Request body:
+ *  - ad_id: admin's ID
+ *  - us_login: user's login
+ *  - new_pwd (optional): new password to set, if undefined, inserts DEFAULT_PASSWORD
+ * Response body:
+ *  - message
+ */
+router.post('/reset_admin', async (req, res, next) => {
+    let {ad_id, us_login, new_pwd} = req.body;
+
+    if (new_pwd === undefined)
+        new_pwd = DEFAULT_PASSWORD;
+
+    admin = await User.findById(ad_id);
+
+    if (!admin || admin.access < 2)
+        return res.status(404).json({ error: 'Access forbidden' });
+
+    user = await User.findOne({login: us_login});
+
+    if (!user)
+        return res.status(404).json({ error: 'Failed to find user' });
+
+    user.password = new_pwd;
+    await user.save();
+
+    res.status(200).json({message: 'Success'});
+})
 
 module.exports = router;
 
