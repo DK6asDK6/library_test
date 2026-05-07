@@ -22,9 +22,6 @@ const validateUser = [
 ];
 
 const validatePost = [
-  body('sender_id')
-      .trim().escape()
-      .notEmpty().withMessage('sender is required'),
   body('title')
       .trim().escape()
       .notEmpty().withMessage('title is required')
@@ -35,9 +32,9 @@ const validatePost = [
     body('link')
         .optional()
         .trim().isURL().withMessage('Invalid URL'),
-    body('files_id')
+    body('access')
         .optional()
-        .isArray().withMessage('files must be an Array')
+        .isInt().withMessage('access must be a number'),
 ]
 
 const validateFile = [

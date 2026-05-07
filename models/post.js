@@ -15,7 +15,7 @@ const mongoose = require('mongoose');
  *  - title - post's title, up to 200 symbols
  *  - text - inner text (if exists).
  *  - link - link to Web Archive page (if exists)
- *  - files_id - array of files IDs, referred to 'File' schema
+ *  - files - array of files' metadata
  */
 const postSchema = new mongoose.Schema({
     sender_id: {
@@ -30,10 +30,22 @@ const postSchema = new mongoose.Schema({
     },
     text: String,
     link: String,
-    files_id: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'File'
-    }]
+    files: [{
+        // originalName: String, // original filename
+        filename: String,     // server-saved filename
+        // path: String,         // file path
+        mimeType: String,     // MIME-type
+        size: Number,         // Size (in bytes)
+        url: String,          // Public URL
+    }],
+    access: {
+        type: Number,
+        default: 0
+    },
+    isApproved: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Post', postSchema);

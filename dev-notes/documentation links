@@ -1,0 +1,31 @@
+-- Multer documentation - for frontend to allow multiple file sending:
+https://github.com/expressjs/multer/blob/main/doc/README-ru.md
+
+-- To upload and display files on front-end, use function like this:
+
+function displayFiles(files) {
+  const filesContainer = document.getElementById('files-container');
+  filesContainer.innerHTML = '';
+
+  files.forEach(file => {
+    const fileElement = document.createElement('div');
+    fileElement.className = 'file-item';
+
+    if (file.mimetype.startsWith('image/')) {
+      fileElement.innerHTML = `
+        <img src="${file.url}" alt="${file.originalName}" style="max-width: 200px;">
+        <p>${file.originalName}</p>
+      `;
+    } else {
+      fileElement.innerHTML = `
+        <a href="${file.url}" target="_blank">${file.originalName}</a>
+        <span>(${formatFileSize(file.size)})</span>
+      `;
+    }
+
+    filesContainer.appendChild(fileElement);
+  });
+}
+
+Every file uploads when it is used in HTML page, so add new 'div' with it as <img> or <a> element
+

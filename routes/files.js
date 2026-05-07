@@ -1,5 +1,5 @@
 /*
- * Files API managing file
+ * Files API managing file (route 'api/files/...')
  * IMPORTS:
  *  - from express:
  *      - router - router for processing requests connected to files

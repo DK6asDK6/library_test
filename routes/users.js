@@ -1,5 +1,5 @@
 /*
- * User API managing file
+ * User API managing file (route 'api/users/...')
  * IMPORTS:
  *  - from express:
  *      - router - router for processing requests connected to user
@@ -56,7 +56,7 @@ router.post('/', validateUser, validationHandler, async (req, res, next) => {
  */
 router.get('/', async (req, res, next) => {
     try {
-        const user = await User.findOne({_id: req.body._id});
+        const user = await User.findById(req.body._id);
 
         if (user != null && user.access === 2) {
             const users = await User.find({}, {_id: 0, password: 0});
@@ -109,7 +109,7 @@ router.post('/login', async (req, res, next) => {
  *  - ad_id: Administrator ID
  *  - us_login: user's login
  *  - s_acc: new access level
- * Responce body:
+ * Response body:
  *  - message
  */
 router.post('/access', async (req, res, next) => {
@@ -183,25 +183,29 @@ router.post('/reset', async (req, res, next) => {
  *  - message
  */
 router.post('/reset_admin', async (req, res, next) => {
-    let {ad_id, us_login, new_pwd} = req.body;
+    try{
+        let {ad_id, us_login, new_pwd} = req.body;
 
-    if (new_pwd === undefined)
-        new_pwd = DEFAULT_PASSWORD;
+        if (new_pwd === undefined)
+            new_pwd = DEFAULT_PASSWORD;
 
-    admin = await User.findById(ad_id);
+        admin = await User.findById(ad_id);
 
-    if (!admin || admin.access < 2)
-        return res.status(404).json({ error: 'Access forbidden' });
+        if (!admin || admin.access < 2)
+            return res.status(404).json({ error: 'Access forbidden' });
 
-    user = await User.findOne({login: us_login});
+        user = await User.findOne({login: us_login});
 
-    if (!user)
-        return res.status(404).json({ error: 'Failed to find user' });
+        if (!user)
+            return res.status(404).json({ error: 'Failed to find user' });
 
-    user.password = new_pwd;
-    await user.save();
+        user.password = new_pwd;
+        await user.save();
 
-    res.status(200).json({message: 'Success'});
+        res.status(200).json({message: 'Success'});
+    } catch (error) {
+        next(error);
+    }
 })
 
 module.exports = router;
