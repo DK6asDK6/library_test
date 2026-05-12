@@ -37,11 +37,6 @@ const validatePost = [
         .isInt().withMessage('access must be a number'),
 ]
 
-const validateFile = [
-    body('file')
-        .notEmpty().withMessage('file is required'),
-]
-
 const validationHandler = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -56,7 +51,6 @@ const validationHandler = (req, res, next) => {
 module.exports = {
   validateUser,
   validatePost,
-  validateFile,
   validationHandler
 };
 

@@ -1,4 +1,5 @@
 /*
+
  * Posts API managing file (route 'api/posts/...')
  * IMPORTS:
  *  - from express:
@@ -20,6 +21,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/user')
 const Post = require('../models/post');
+
+const upload = require('../middleware/upload');
 const { validatePost, validationHandler } = require('../middleware/validation');
 
 /*
@@ -63,17 +66,17 @@ router.post('/:uid', validatePost, validationHandler, upload.array('files', 20),
 });
 
 /* Get all posts (if not admin, approved only)
- * Route: api/posts/{uid - optional}
+ * Route: api/posts/{uid - 0 if guest}
  * Request body: None
  * Response body:
  *  - posts: array of posts info (_id, title, sender_id, isApproved, sender_name)
  */
-router.get('/:uid?', async (req, res) => {
+router.get('/:uid', async (req, res) => {
     try {
         const uid = req.params.uid;
         let access = 0;
 
-        if (uid) {
+        if (uid !== 0 ) {
             let user = User.findById(uid);
 
             if (user)
@@ -84,7 +87,7 @@ router.get('/:uid?', async (req, res) => {
             {_id:1, sender_id: 1, title: 1, isApproved: 1});
 
         if (access < 2)
-            posts = posts.filter(item => item.isApproved);
+            posts = posts.filter(item => (item.isApproved === 1));
 
         for (let post of posts) {
             post.sender_name = await User.findById(post.sender_id).login;
@@ -93,12 +96,16 @@ router.get('/:uid?', async (req, res) => {
         res.json(posts);
     } catch (error) {
         next(error);
-        // res.status(500).json({ error: error.message });
     }
 });
 
-// Get post with mentioned ID
-router.get('/:id', async (req, res, next) => {
+/*
+ * Get one post request
+ * Route: api/posts/one/{id}
+ * Request body: none
+ * Response body: full post
+ */
+router.get('/one/:id', async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.id);
 
@@ -109,40 +116,72 @@ router.get('/:id', async (req, res, next) => {
         res.json(post);
     } catch (error) {
         next(error);
-        // res.status(500).json({ error: error.message });
     }
 });
 
-// Post updating
-router.put('/:id', validatePost, validationHandler, async (req, res, next) => {
-    try {
-        const post = await Post.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        );
+/*
+ * Approve/Decline post request
+ * Route: api/posts/appr/{uid}
+ * Request body:
+ *  - postId - post ID
+ *  - isApproved - true if approved, false id declined
+ * Response body:
+ *  - message
+ */
+router.post('/appr/:uid', async (req, res, next) => {
+    try{
+        const uid = req.params.uid;
 
-        if (!post) {
-            return res.status(404).json({ error: 'Пост не найден' });
-        }
+        const admin = await User.findById(uid);
 
-        res.json(post);
+        if (!admin || admin.access < 2)
+            res.status(404).send('Access forbidden');
+
+        const {postId, isApproved} = req.body;
+
+        const post = await Post.findById(postId);
+
+        if (!post)
+            res.status(404).send('No post found');
+
+        if (isApproved)
+            post.isApproved = 1;
+        else
+            post.isApproved = -1;
+
+        post.save();
+
+        res.json({message: 'Success'});
+
     } catch (error) {
-        // res.status(400).json({ error: error.message });
         next(error);
     }
+
 });
 
-// Post deleting
-router.delete('/:id', async (req, res, next) => {
+/*
+ * Post remove request
+ * Route: api/posts/{uid}/{id}
+ * Request body: none
+ * Response body:
+ *  - message
+ */
+router.delete('/:uid/:id', async (req, res, next) => {
     try {
-        const post = await Post.findByIdAndDelete(req.params.id);
+        const {uid, id} = req.params;
+
+        const admin = await User.findById(uid);
+
+        if (!admin || admin.access < 2)
+            res.status(404).send('Access forbidden');
+
+        const post = await Post.findByIdAndDelete(id);
 
         if (!post) {
-            return res.status(404).json({ error: 'Пост не найден' });
+            return res.status(404).json({ error: 'No post found' });
         }
 
-        res.json({ message: 'Пост успешно удалён' });
+        res.json({ message: 'Success' });
     } catch (error) {
         // res.status(500).json({ error: error.message });
         next(error);

@@ -20,7 +20,6 @@ const mongoose = require('mongoose');
 
 const userRoutes = require('./routes/users');
 const postRoutes = require('./routes/posts');
-const fileRoutes = require('./routes/files');
 
 const app = express();
 
@@ -39,7 +38,6 @@ mongoose.connect(process.env.MONGODB_URI, {}).then(() => {
 // API routes registration
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
-app.use('/api/files', fileRoutes);
 
 
 

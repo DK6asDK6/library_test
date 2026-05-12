@@ -31,3 +31,5 @@ const upload = multer({
         cb(null, true) //added for case we need to filter files by type
     }
 })
+
+module.exports = upload;

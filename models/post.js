@@ -43,8 +43,8 @@ const postSchema = new mongoose.Schema({
         default: 0
     },
     isApproved: {
-        type: Boolean,
-        default: false
+        type: Number,
+        default: 0 // 0 - needed to approve, 1 - approved, -1 - declined
     }
 }, { timestamps: true });
 
