@@ -20,16 +20,8 @@ At the time of writing, only the backend is complete; the frontend is under deve
   - [Function Comments (Route Handlers)](#function-comments-route-handlers)
   - [General Function Comments](#general-function-comments)
 - [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Environment Variables](#environment-variables)
-  - [Running the Server](#running-the-server)
 - [API Endpoints](#api-endpoints)
 - [Frontend Status](#frontend-status)
-- [Contributing](#contributing)
-- [License](#license)
-
 ---
 
 ## Technology Stack
@@ -68,6 +60,17 @@ Every file ends with a footer comment that clearly marks its end.
 ```javascript
 /*
  * END OF 'filename' FILE
+ */
+```
+
+### Structure Comments
+
+For data structures (e.g., Mongoose schemas) the following format is used:
+```javascript
+/*
+ * Brief description of the structure
+ * Fields:
+ *  - field name - purpose
  */
 ```
 
