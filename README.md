@@ -20,8 +20,12 @@ At the time of writing, only the backend is complete; the frontend is under deve
   - [Function Comments (Route Handlers)](#function-comments-route-handlers)
   - [General Function Comments](#general-function-comments)
 - [Project Structure](#project-structure)
-- [API Endpoints](#api-endpoints)
 - [Frontend Status](#frontend-status)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running the Server](#running-the-server)
+- [API Endpoints](#api-endpoints)
 ---
 
 ## Technology Stack
@@ -95,7 +99,7 @@ Route handler functions (typically POST, GET, DELETE) are documented with detail
 
 For utility functions, middleware, and other non‑route functions, a simpler comment style is used (still including a description and details of parameters/return values when needed).
 
-### Project Structure
+## Project Structure
 
 The repository is organised as follows:
 
@@ -126,6 +130,49 @@ The repository is organised as follows:
 
 - server.js – Bootstraps the Express server and establishes the MongoDB connection.
 
-### Frontend Status
+## Frontend Status
 
 The frontend part of the application is currently under development. Once ready, this section will be updated with instructions for setting up and running the client.
+
+## Getting started
+
+### Prerequisites
+
+- Node.js (v14 or later)
+- MongoDB (v7.0.37 or later)
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/DK6asDK6/library_test.git
+cd  library_test
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+### Running the Server
+
+Start server in production mode:
+```bash
+npm start
+```
+
+## API Endpoints
+
+The main endpoints are:
+- POST /api/users - Register new user
+- GET /api/users - Get list of all users (request allowed only for admins)
+- POST /api/users/login - Log user in
+- POST /api/users/access - Set user's access level (request allowed only for admins)
+- POST /api/users/reset - Reset user's password (old password required)
+- POST /api/users/reset_admin - Reset other user's password (request allowed only for admins)
+- POST /api/posts/:uid - Create new post (access 1 or more required)
+- GET /api/posts/:uid - Show all posts (if user is not admin, only approved ones are shown)
+- GET /api/posts/one/:id - Show one post
+- POST /api/posts/appr/:uid - Approve or Revoke post (request allowed only for admins)
+- DELETE /api/posts/:uid/:id - Remove one post (request allowed only for admins)

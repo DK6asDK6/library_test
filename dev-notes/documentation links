@@ -29,3 +29,10 @@ function displayFiles(files) {
 
 Every file uploads when it is used in HTML page, so add new 'div' with it as <img> or <a> element
 
+Windows
+    - register/login
+    - log out (front)
+    - ...
+
+
+

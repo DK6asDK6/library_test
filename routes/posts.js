@@ -25,6 +25,7 @@ const Post = require('../models/post');
 const upload = require('../middleware/upload');
 const { validatePost, validationHandler } = require('../middleware/validation');
 
+// TODO force post
 /*
  * Post creation (without files) request (access 1 or more required)
  * Route: api/posts/{uid}
@@ -65,6 +66,7 @@ router.post('/:uid', validatePost, validationHandler, upload.array('files', 20),
     }
 });
 
+
 /* Get all posts (if not admin, approved only)
  * Route: api/posts/{uid - 0 if guest}
  * Request body: None
@@ -99,6 +101,7 @@ router.get('/:uid', async (req, res) => {
     }
 });
 
+// TODO check access: if 1 or less, send only if approved
 /*
  * Get one post request
  * Route: api/posts/one/{id}
@@ -120,11 +123,11 @@ router.get('/one/:id', async (req, res, next) => {
 });
 
 /*
- * Approve/Decline post request
+ * Approve/Revoke post request
  * Route: api/posts/appr/{uid}
  * Request body:
  *  - postId - post ID
- *  - isApproved - true if approved, false id declined
+ *  - isApproved - true if approved, false id revoked
  * Response body:
  *  - message
  */
