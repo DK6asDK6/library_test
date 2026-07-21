@@ -44,7 +44,7 @@ const postSchema = new mongoose.Schema({
     },
     isApproved: {
         type: Number,
-        default: 0 // 0 - needed to approve, 1 - approved, -1 - declined
+        default: 0 // 0 - needed to approve, 1 - approved, -1 - revoked
     }
 }, { timestamps: true });
 

@@ -25,7 +25,7 @@ const Post = require('../models/post');
 const upload = require('../middleware/upload');
 const { validatePost, validationHandler } = require('../middleware/validation');
 
-// TODO force post
+
 /*
  * Post creation (without files) request (access 1 or more required)
  * Route: api/posts/{uid}
@@ -35,6 +35,7 @@ const { validatePost, validationHandler } = require('../middleware/validation');
  *      - text (optional): post's text, default: null string
  *      - link (optional): link to archive page (if exists), default: null string
  *      - access (optional): access level to see this post, default: 0
+ *      - forceApprove (optional): force approve post (admins only)
  * Response body:
  *  - post - whole post structure
  */
@@ -58,6 +59,14 @@ router.post('/:uid', validatePost, validationHandler, upload.array('files', 20),
         const post = new Post(req.body.post);
         post.sender_id = req.params.uid;
         post.files = fileMetadata;
+
+        if (req.body.forceApprove !== undefined)
+            if (req.body.forceApprove === true)
+                if (admin.access == 2)
+                    post.isApproved = 1;
+                else
+                    res.status(404).send('Access forbidden');
+
         await post.save();
         res.status(201).json(post);
     } catch (error) {
@@ -101,22 +110,33 @@ router.get('/:uid', async (req, res) => {
     }
 });
 
-// TODO check access: if 1 or less, send only if approved
 /*
  * Get one post request
- * Route: api/posts/one/{id}
+ * Route: api/posts/one/{id}/{uid}
  * Request body: none
  * Response body: full post
  */
-router.get('/one/:id', async (req, res, next) => {
+router.get('/one/:id/:uid', async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.id);
+        const uid = req.params.uid;
+        let access = 0;
+
+        if (uid !== 0){
+            let user = User.findById(uid)
+
+            if (user)
+                access = user.access;
+        }
 
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
-        }
+        } else if (access == 2 || post.isApproved == 1)
+            res.json(post);
+        else
+            res.status(404).send('Access forbidden');
 
-        res.json(post);
+
     } catch (error) {
         next(error);
     }
