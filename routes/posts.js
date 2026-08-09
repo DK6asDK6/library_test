@@ -28,7 +28,7 @@ const { validatePost, validationHandler } = require('../middleware/validation');
 
 /*
  * Post creation (without files) request (access 1 or more required)
- * Route: api/posts/{uid}
+ * Route: api/posts/{uid - user ID (or 0 if guest)}
  * Request body:
  *  - post: structure with following fields:
  *      - title: string 1-200 symbols in length
@@ -41,8 +41,15 @@ const { validatePost, validationHandler } = require('../middleware/validation');
  */
 router.post('/:uid', validatePost, validationHandler, upload.array('files', 20), async (req, res, next) => {
     try {
-        const admin = User.findById(req.params.uid);
+        let admin = null;
         const files = req.files || []
+        const uid = req.params.uid;
+
+        let isApproved = false;
+        let post = null;
+
+        if (uid !== "0")
+            admin = User.findById(uid);
 
         const fileMetadata = files.map(file =>({
             originalName: file.originalName,
@@ -56,28 +63,27 @@ router.post('/:uid', validatePost, validationHandler, upload.array('files', 20),
         if (!admin)
             res.status(404).send('Access forbidden');
 
-        const post = new Post(req.body.post);
-        post.sender_id = req.params.uid;
-        post.files = fileMetadata;
-
         if (req.body.forceApprove !== undefined)
             if (req.body.forceApprove === true)
-                if (admin.access == 2)
-                    post.isApproved = 1;
+                if (admin.access === 2)
+                    isApproved = true;
                 else
                     res.status(404).send('Access forbidden');
+
+        post = new Post(req.body.post);
+        post.sender_id = req.params.uid;
+        post.files = fileMetadata;
 
         await post.save();
         res.status(201).json(post);
     } catch (error) {
         next(error);
-        // res.status(400).json({ error: error.message });
     }
 });
 
 
 /* Get all posts (if not admin, approved only)
- * Route: api/posts/{uid - 0 if guest}
+ * Route: api/posts/{uid - user ID (or 0 if guest)}
  * Request body: None
  * Response body:
  *  - posts: array of posts info (_id, title, sender_id, isApproved, sender_name)
@@ -87,11 +93,12 @@ router.get('/:uid', async (req, res) => {
         const uid = req.params.uid;
         let access = 0;
 
-        if (uid !== 0 ) {
+        if (uid !== "0") {
             let user = User.findById(uid);
 
-            if (user)
+            if (user) {
                 access = user.access;
+            }
         }
 
         let posts = await Post.find({access: {$lte: access}},
@@ -112,7 +119,7 @@ router.get('/:uid', async (req, res) => {
 
 /*
  * Get one post request
- * Route: api/posts/one/{id}/{uid}
+ * Route: api/posts/one/{id - post ID}/{uid - user ID (or 0 if guest)}
  * Request body: none
  * Response body: full post
  */
@@ -122,7 +129,7 @@ router.get('/one/:id/:uid', async (req, res, next) => {
         const uid = req.params.uid;
         let access = 0;
 
-        if (uid !== 0){
+        if (uid !== "0"){
             let user = User.findById(uid)
 
             if (user)
@@ -131,7 +138,7 @@ router.get('/one/:id/:uid', async (req, res, next) => {
 
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
-        } else if (access == 2 || post.isApproved == 1)
+        } else if (access === 2 || post.isApproved === 1)
             res.json(post);
         else
             res.status(404).send('Access forbidden');
@@ -144,7 +151,7 @@ router.get('/one/:id/:uid', async (req, res, next) => {
 
 /*
  * Approve/Revoke post request
- * Route: api/posts/appr/{uid}
+ * Route: api/posts/appr/{uid - user ID (or 0 if guest)}
  * Request body:
  *  - postId - post ID
  *  - isApproved - true if approved, false id revoked
@@ -154,8 +161,10 @@ router.get('/one/:id/:uid', async (req, res, next) => {
 router.post('/appr/:uid', async (req, res, next) => {
     try{
         const uid = req.params.uid;
+        let admin = null;
 
-        const admin = await User.findById(uid);
+        if (uid !== "0")
+            admin = await User.findById(uid);
 
         if (!admin || admin.access < 2)
             res.status(404).send('Access forbidden');
@@ -184,16 +193,18 @@ router.post('/appr/:uid', async (req, res, next) => {
 
 /*
  * Post remove request
- * Route: api/posts/{uid}/{id}
+ * Route: api/posts/{id - post ID}/{uid - user ID (or 0 if guest)}
  * Request body: none
  * Response body:
  *  - message
  */
-router.delete('/:uid/:id', async (req, res, next) => {
+router.delete('/:id/:uid', async (req, res, next) => {
     try {
-        const {uid, id} = req.params;
+        const {id, uid} = req.params;
+        let admin = null;
 
-        const admin = await User.findById(uid);
+        if (uid !== "0")
+            admin = await User.findById(uid);
 
         if (!admin || admin.access < 2)
             res.status(404).send('Access forbidden');

@@ -22,6 +22,7 @@ const DEFAULT_PASSWORD = 'SUAIisBEST';
 
 /*
  * User register request
+ * Route: api/users
  * Request body:
  *  - login: user's 'login' field
  *  - password: user's 'password' field
@@ -49,6 +50,7 @@ router.post('/', validateUser, validationHandler, async (req, res, next) => {
 
 /*
  * Get all users request (only admins allowed)
+ * Route: api/users
  * Request body:
  *  - _id - user's id
  * Response body:
@@ -70,7 +72,40 @@ router.get('/', async (req, res, next) => {
 });
 
 /*
+ * Get user's acces request
+ * Route: api/users/{id - user ID (or 0 if guest)}
+ * Request body:
+ * Response body:
+ *  - accLevel: user's access
+ */
+router.get('/access/:id', async (req, res, next) => {
+    try{
+        const id = req.params.id;
+
+        let user = null;
+
+        if (id !== "0")
+            user = User.findById(id);
+
+        if (!user || user.access === 0)
+            res.status(201).json({
+                message: 'Success',
+                accLevel: 0
+            });
+        else
+            res.status(201).json({
+                message: 'Success',
+                accLevel: user.access
+            });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+/*
  * User log in request
+ * Route: api/users/login
  * Request body:
  *  - login: user's login
  *  - password: user's password
@@ -105,18 +140,22 @@ router.post('/login', async (req, res, next) => {
 
 /*
  * Access set request (only admins allowed)
+ * Route: api/users/access/{id - user ID (or 0 if guest)}
  * Request body:
- *  - ad_id: Administrator ID
  *  - us_login: user's login
  *  - s_acc: new access level
  * Response body:
  *  - message
  */
-router.post('/access', async (req, res, next) => {
+router.post('/access/:id', async (req, res, next) => {
     try{
-        const {ad_id, us_login, s_acc} = req.body;
+        const {us_login, s_acc} = req.body;
+        const id = req.params.id;
 
-        const admin = User.findById(ad_id);
+        let admin = null;
+
+        if (id !== "0")
+            admin = User.findById(id);
 
         if (admin != null && admin.access === 2) {
             User.updateOne({
@@ -138,22 +177,26 @@ router.post('/access', async (req, res, next) => {
 });
 
 /*
- * Password reset request:
+ * Password reset request
+ * Route: api/users/reset/{id - user ID (or 0 if guest)}
  * Request body:
- *  - id: user's ID
  *  - pwd: old password
  *  - new_pwd: new password
  * Response body:
  *  - message
  */
-router.post('/reset', async (req, res, next) => {
+router.post('/reset/:id', async (req, res, next) => {
    try{
-       const {id, pwd, new_pwd} = req.body;
+       const {pwd, new_pwd} = req.body;
+       const id = req.params.id;
 
        if (!pwd || !new_pwd)
            return res.status(400).json({ error: 'Old and new passwords required' });
 
-       const user = await User.findById(id);
+       let user = null;
+
+       if (id !== "0")
+           user = await User.findById(id);
 
        if (!user)
            return res.status(404).json({ error: 'Failed to find user' });
@@ -175,26 +218,30 @@ router.post('/reset', async (req, res, next) => {
 
 /*
  * Password reset request (admins only)
+ * Route: api/users/reset_admin/{id - admin's ID (or 0 if guest)}
  * Request body:
- *  - ad_id: admin's ID
  *  - us_login: user's login
  *  - new_pwd (optional): new password to set, if undefined, inserts DEFAULT_PASSWORD
  * Response body:
  *  - message
  */
-router.post('/reset_admin', async (req, res, next) => {
+router.post('/reset_admin/:id', async (req, res, next) => {
     try{
-        let {ad_id, us_login, new_pwd} = req.body;
+        let {us_login, new_pwd} = req.body;
+        const id = req.params.id;
 
         if (new_pwd === undefined)
             new_pwd = DEFAULT_PASSWORD;
 
-        admin = await User.findById(ad_id);
+        let admin = null;
+
+        if (id !== "0")
+            admin = await User.findById(id);
 
         if (!admin || admin.access < 2)
             return res.status(404).json({ error: 'Access forbidden' });
 
-        user = await User.findOne({login: us_login});
+        let user = await User.findOne({login: us_login});
 
         if (!user)
             return res.status(404).json({ error: 'Failed to find user' });

@@ -167,6 +167,7 @@ npm start
 The main endpoints are:
 - POST /api/users - Register new user
 - GET /api/users - Get list of all users (request allowed only for admins)
+- GET /api/users/access/:id - Get user's access level
 - POST /api/users/login - Log user in
 - POST /api/users/access - Set user's access level (request allowed only for admins)
 - POST /api/users/reset - Reset user's password (old password required)
