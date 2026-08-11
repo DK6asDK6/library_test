@@ -39,7 +39,7 @@ At the time of writing, only the backend is complete; the frontend is under deve
 
 ## Code Style & Documentation
 
-The codebase follows a strict commenting convention to keep it self‑documenting and maintainable. Every file, data structure, and function is preceded by a descriptive comment block.
+The codebase follows a strict commenting convention to keep itself‑documenting and maintainable. Every file, data structure, and function is preceded by a descriptive comment block.
 
 ### File Header
 
@@ -97,7 +97,25 @@ Route handler functions (typically POST, GET, DELETE) are documented with detail
 
 ### General Function Comments
 
-For utility functions, middleware, and other non‑route functions, a simpler comment style is used (still including a description and details of parameters/return values when needed).
+General functions are documentated with detailed information about parameters and return values.
+```javascript
+/*
+ * Brief description of the function
+ * PARAMETERS:
+ *  - field: description
+ *  - (if a nested structure is passed)
+ *  - field: structure with following fields:
+ *      - subfield: description
+ * RETURNS:
+ *  - field - description
+ */
+```
+Every general function ends with a footer comment
+```javascript
+/*
+ * End of 'function' function
+ */
+```
 
 ## Project Structure
 
@@ -107,6 +125,7 @@ The repository is organised as follows:
 .
 ├── client/                     # (In development) Frontend application
 ├── middleware/
+│   ├── spellcheck.js           # Handles spellchecker functions
 │   ├── upload.js               # Handles file uploads, enforces file size/type limits
 │   └── validation.js           # Validates incoming structures for posts and users
 ├── models/
@@ -119,6 +138,8 @@ The repository is organised as follows:
 └── server.js                   # Entry point – starts Node server and connects to MongoDB
 ```
 - client/ – Frontend code (currently under development, will be added later).
+
+- middleware/spellcheck.js - Initializes spellchecker and handles requests connected with user input.
 
 - middleware/upload.js – Manages file uploads, validates file types and sizes.
 
@@ -150,7 +171,6 @@ cd  library_test
 ```
 
 2. Install dependencies:
-
 ```bash
 npm install
 ```

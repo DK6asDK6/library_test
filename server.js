@@ -4,6 +4,8 @@
  *  - dotenv:
  *  - express
  *  - mongoose
+ *  - from middleware/spellcheck:
+ *      - initSpellChecker: spellchecker initialization function
  *  - from routes/users:
  *      - userRoutes: user authentification functions
  *  - from routes/posts:
@@ -17,6 +19,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+
+// Spellchecker initialization
+require('./middleware/spellcheck').initSpellChecker();
 
 const userRoutes = require('./routes/users');
 const postRoutes = require('./routes/posts');
@@ -45,14 +50,6 @@ app.use('/api/posts', postRoutes);
 app.get('/', (req, res) => {
     res.send('Node.js + MongoDB server is running!');
 });
-
-
-// Error 404 handling
-/*
-app.use('*', (req, res) => {
-    res.status(404).json({ error: 'Route not found' });
-});
-*/
 
 // Server launching
 const PORT = process.env.PORT || 3000;

@@ -33,3 +33,7 @@ const upload = multer({
 })
 
 module.exports = upload;
+
+/*
+ * END OF 'upload.js' FILE
+ */
