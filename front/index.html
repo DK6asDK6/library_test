@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Архив постов</title>
+  <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+<!-- Шапка -->
+<header>
+  <h1>📚 Архив постов</h1>
+  <div class="user-controls">
+    <div id="guest-controls">
+      <button id="login-btn" class="btn btn-primary">Войти</button>
+    </div>
+
+    <div id="user-controls" style="display: none;">
+      <span id="user-login-display">Пользователь</span>
+      <span id="user-access-display" class="status-badge" style="font-size:12px;">Роль: Гость</span>
+      <a href="admin.html" id="admin-link" style="display: none; text-decoration: none;">
+        <button class="btn btn-warning" style="padding: 4px 12px; font-size: 12px;">👑 Админ-панель</button>
+      </a>
+      <button id="logout-btn" class="btn btn-danger">Выйти</button>
+    </div>
+  </div>
+</header>
+
+<!-- Панель управления -->
+<div class="controls-panel">
+  <button id="create-post-btn" class="btn btn-success" style="display: none;">
+    ➕ Добавить пост
+  </button>
+
+  <button id="refresh-posts-btn" class="btn btn-secondary">
+    🔄 Обновить посты
+  </button>
+
+  <span id="last-update" class="last-update">Последнее обновление: --:--:--</span>
+</div>
+
+<!-- Список постов -->
+<div id="posts-container">
+  <div class="loading">Загрузка постов...</div>
+</div>
+
+<!-- Модальное окно для создания поста -->
+<div id="create-post-modal" class="modal">
+  <div class="modal-content">
+    <h2>Создать новый пост</h2>
+    <form id="create-post-form">
+      <div class="form-group">
+        <label for="post-title">Заголовок *</label>
+        <input type="text" id="post-title" placeholder="Введите заголовок" required>
+      </div>
+      <div class="form-group">
+        <label for="post-content">Текст поста *</label>
+        <textarea id="post-content" placeholder="Введите текст поста" required></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancel-create-btn">Отмена</button>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/index.js"></script>
+</body>
+</html>

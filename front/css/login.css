@@ -1,0 +1,137 @@
+/* login.css */
+
+/* Общие стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f0f2f5;
+}
+
+/* Карточка формы */
+form {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 360px;
+    max-width: 90%;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #1a1a1a;
+}
+
+/* Группа полей */
+div {
+    margin-bottom: 16px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+}
+
+input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #4A90D9;
+}
+
+/* Кнопка */
+button {
+    width: 100%;
+    padding: 12px;
+    background: #4A90D9;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #357ABD;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Сообщение об ошибке */
+#error-message {
+    background: #fee;
+    color: #c00;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    display: none;
+}
+
+/* Ссылка переключения режима */
+p {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 14px;
+    color: #666;
+}
+
+a {
+    color: #4A90D9;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Адаптивность */
+@media (max-width: 400px) {
+    form {
+        padding: 24px;
+    }
+}
+
+/* Дополнительные стили для login.html */
+.container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    display: none;
+    white-space: pre-wrap;
+}

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 Панель администратора</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<!-- Шапка -->
+<header>
+    <div class="header-left">
+        <h1>👑 Панель администратора</h1>
+    </div>
+    <div class="header-right">
+        <span id="admin-info">Админ: загрузка...</span>
+        <button id="back-to-posts" class="btn btn-secondary">← На главную</button>
+        <button id="logout-btn" class="btn btn-danger">Выйти</button>
+    </div>
+</header>
+
+<!-- Основное содержимое -->
+<div class="admin-container">
+    <!-- Статистика -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" id="total-users">0</div>
+            <div class="stat-label">Всего пользователей</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="total-posts">0</div>
+            <div class="stat-label">Всего постов</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="pending-posts">0</div>
+            <div class="stat-label">На модерации</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="approved-posts">0</div>
+            <div class="stat-label">Одобрено</div>
+        </div>
+    </div>
+
+    <!-- Управление пользователями -->
+    <div class="admin-section">
+        <div class="section-header">
+            <h2>👥 Управление пользователями</h2>
+            <div class="search-box">
+                <input type="text" id="user-search" placeholder="🔍 Поиск по логину...">
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="users-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Логин</th>
+                    <th>Роль</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody id="users-table-body">
+                <tr>
+                    <td colspan="4" class="loading-text">Загрузка пользователей...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Управление постами (краткий список) -->
+    <div class="admin-section">
+        <div class="section-header">
+            <h2>📝 Последние посты</h2>
+            <button id="refresh-posts-btn" class="btn btn-secondary">🔄 Обновить</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="posts-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Заголовок</th>
+                    <th>Статус</th>
+                    <th>Автор</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody id="posts-table-body">
+                <tr>
+                    <td colspan="5" class="loading-text">Загрузка постов...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для изменения прав пользователя -->
+<div id="edit-user-modal" class="modal">
+    <div class="modal-content">
+        <h2>✏️ Изменение прав пользователя</h2>
+        <form id="edit-user-form">
+            <div class="form-group">
+                <label>Пользователь</label>
+                <input type="text" id="edit-user-login" disabled>
+            </div>
+            <div class="form-group">
+                <label for="edit-user-access">Уровень доступа</label>
+                <select id="edit-user-access">
+                    <option value="0">👤 Гость (access = 0)</option>
+                    <option value="1">🛠️ Модератор (access = 1)</option>
+                    <option value="2">👑 Администратор (access = 2)</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="cancel-edit-btn">Отмена</button>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div id="confirm-modal" class="modal">
+    <div class="modal-content confirm-modal">
+        <h2>⚠️ Подтверждение удаления</h2>
+        <p id="confirm-message">Вы уверены, что хотите удалить этого пользователя?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancel-confirm-btn">Отмена</button>
+            <button type="button" class="btn btn-danger" id="confirm-delete-btn">Удалить</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>
