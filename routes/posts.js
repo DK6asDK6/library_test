@@ -13,6 +13,8 @@
  *      - validationHandler - function to check validation, returns error code.
  *  - from middleware/upload:
  *      - upload
+ *  - from middleware/spellcheck:
+ *      - getCorrectionVariants - function to handle user's input mistakes while searching
  * EXPORTS:
  *  - router - request (for post API) handler
  */
@@ -24,6 +26,7 @@ const Post = require('../models/post');
 
 const upload = require('../middleware/upload');
 const { validatePost, validationHandler } = require('../middleware/validation');
+const {getCorrectionVariants} = require('../middleware/spellcheck');
 
 
 /*
@@ -84,24 +87,46 @@ router.post('/:uid', validatePost, validationHandler, upload.array('files', 20),
 
 /* Get all posts (if not admin, approved only)
  * Route: api/posts/{uid - user ID (or 0 if guest)}
- * Request body: None
+ * Request body:
+ *  - filters (optional) - JSON with additional filters
+ *      - title - title substring to search
  * Response body:
  *  - posts: array of posts info (_id, title, sender_id, isApproved, sender_name)
  */
 router.get('/:uid', async (req, res) => {
     try {
         const uid = req.params.uid;
-        let access = 0;
+        let userAccess = 0;
 
         if (uid !== "0") {
             let user = User.findById(uid);
 
             if (user) {
-                access = user.access;
+                userAccess = user.access;
             }
         }
 
-        let posts = await Post.find({access: {$lte: access}},
+        const userFilters = req.body.filters;
+        let searchTitle = "";
+        let wordConditions = {};
+
+        if (userFilters && userFilters.title !== undefined) {
+            searchTitle = userFilters.title.trim();
+
+            const wordVariants = getCorrectionVariants(searchTitle);
+            wordConditions = wordVariants.map(variants => ({
+                $or: variants.map(variant => ({
+                    title: {$regex: variant, $options: 'i'}
+                }))
+            }));
+        }
+
+        const query = {
+            $and: {access: {$lte: userAccess}},
+                  wordConditions
+        };
+
+        let posts = await Post.find(query,
             {_id:1, sender_id: 1, title: 1, isApproved: 1});
 
         if (access < 2)
@@ -120,7 +145,7 @@ router.get('/:uid', async (req, res) => {
 /*
  * Get one post request
  * Route: api/posts/one/{id - post ID}/{uid - user ID (or 0 if guest)}
- * Request body: none
+ * Request body: None
  * Response body: full post
  */
 router.get('/one/:id/:uid', async (req, res, next) => {
