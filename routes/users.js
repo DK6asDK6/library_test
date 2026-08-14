@@ -85,7 +85,7 @@ router.get('/access/:id', async (req, res, next) => {
         let user = null;
 
         if (id !== "0")
-            user = User.findById(id);
+            user = await User.findById(id);
 
         if (!user || user.access === 0)
             res.status(201).json({
