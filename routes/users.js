@@ -76,7 +76,7 @@ router.get('/', async (req, res, next) => {
  * Route: api/users/{id - user ID (or 0 if guest)}
  * Request body:
  * Response body:
- *  - message: user's access level
+ *  - message: user's access level (0-2)
  */
 router.get('/access/:id', async (req, res, next) => {
     try{
