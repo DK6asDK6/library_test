@@ -93,51 +93,74 @@ router.post('/:uid', validatePost, validationHandler, upload.array('files', 20),
  * Response body:
  *  - posts: array of posts info (_id, title, sender_id, isApproved, sender_name)
  */
-router.get('/:uid', async (req, res) => {
+router.get('/:uid', async (req, res, next) => {
     try {
         const uid = req.params.uid;
         let userAccess = 0;
 
+        // Получаем уровень доступа пользователя
         if (uid !== "0") {
-            let user = User.findById(uid);
-
+            const user = await User.findById(uid); // ← добавили await!
             if (user) {
                 userAccess = user.access;
             }
         }
 
-        const userFilters = req.body.filters;
+        // 🔥 Используем req.query для GET-запроса
+        const userFilters = req.query.filters || null;
         let searchTitle = "";
-        let wordConditions = {};
+        let wordConditions = [];
 
-        if (userFilters && userFilters.title !== undefined) {
+        // Обработка фильтра по заголовку
+        if (userFilters && userFilters.title) {
             searchTitle = userFilters.title.trim();
 
+            // Получаем варианты исправлений через spellchecker
             const wordVariants = getCorrectionVariants(searchTitle);
+
+            // Строим условия для поиска
             wordConditions = wordVariants.map(variants => ({
                 $or: variants.map(variant => ({
-                    title: {$regex: variant, $options: 'i'}
+                    title: { $regex: variant, $options: 'i' }
                 }))
             }));
         }
 
-        const query = {
-            $and: {access: {$lte: userAccess}},
-                  wordConditions
+        // Строим запрос
+        let query = {
+            access: { $lte: userAccess }
         };
 
-        let posts = await Post.find(query,
-            {_id:1, sender_id: 1, title: 1, isApproved: 1});
+        // Добавляем условия поиска по заголовку, если они есть
+        if (wordConditions.length > 0) {
+            query.$and = wordConditions;
+        }
 
-        if (access < 2)
-            posts = posts.filter(item => (item.isApproved === 1));
+        // Выполняем запрос
+        let posts = await Post.find(query, {
+            _id: 1,
+            sender_id: 1,
+            title: 1,
+            isApproved: 1,
+            access: 1
+        });
 
+        // Если пользователь не админ - показываем только одобренные посты
+        if (userAccess < 2) {
+            posts = posts.filter(item => item.isApproved === 1);
+        }
+
+        // Добавляем имя автора к каждому посту
         for (let post of posts) {
-            post.sender_name = await User.findById(post.sender_id).login;
+            const user = await User.findById(post.sender_id);
+            post = post.toObject();
+            post.sender_name = user ? user.login : 'Неизвестен';
         }
 
         res.json(posts);
+
     } catch (error) {
+        console.error('❌ Ошибка в GET /:uid:', error);
         next(error);
     }
 });

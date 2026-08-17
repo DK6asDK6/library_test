@@ -6,11 +6,11 @@
 // --- КОНФИГУРАЦИЯ ---
 const API_BASE_URL = 'http://localhost:3000/api';
 
-// --- ПОЛУЧАЕМ ДАННЫЕ ПОЛЬЗОВАТЕЛЯ ИЗ LOCALSTORAGE ---
+// 🔥 ТОЛЬКО ОДНО ОБЪЯВЛЕНИЕ - В НАЧАЛЕ ФАЙЛА
 const userId = localStorage.getItem('userId');
 const userLogin = localStorage.getItem('userLogin');
 
-// --- ПЕРЕМЕННАЯ ДЛЯ ХРАНЕНИЯ ACCESS ---
+// 🔥 ПЕРЕМЕННАЯ ДЛЯ ХРАНЕНИЯ ACCESS (НЕ В LOCALSTORAGE!)
 let currentUserAccess = 0;
 
 console.log('👤 Данные пользователя:', { userId, userLogin });
@@ -31,48 +31,46 @@ const modal = document.getElementById('create-post-modal');
 const cancelCreateBtn = document.getElementById('cancel-create-btn');
 const createPostForm = document.getElementById('create-post-form');
 
-// --- ФУНКЦИЯ ПОЛУЧЕНИЯ ACCESS С СЕРВЕРА (БЕЗОПАСНАЯ) ---
+// --- ФУНКЦИЯ ПОЛУЧЕНИЯ ACCESS С СЕРВЕРА ---
+// --- ФУНКЦИЯ ПОЛУЧЕНИЯ ACCESS С СЕРВЕРА ---
+// --- ФУНКЦИЯ ПОЛУЧЕНИЯ ACCESS С СЕРВЕРА ---
 async function fetchUserAccess() {
-    // Если пользователь не зарегистрирован → гость
     if (!userId) {
         console.log('👤 Гость (access: 0)');
         return 0;
     }
 
     try {
-        console.log('🔍 Проверяем права пользователя:', userId);
+        console.log(`🔍 Запрашиваем уровень доступа для пользователя: ${userId}`);
 
-        // 🔥 ДЕЛАЕМ ЗАПРОС К ЗАЩИЩЕННОМУ ЭНДПОИНТУ
-        // Если пользователь админ — запрос вернет 200 и данные
-        // Если не админ — вернет 403 (или другую ошибку)
-        const response = await fetch(`${API_BASE_URL}/users`, {
-            headers: {
-                'user-id': userId,
-                'Content-Type': 'application/json'
-            }
+        // 🔥 ДОБАВЛЯЕМ await
+        const response = await fetch(`${API_BASE_URL}/users/access/${userId}`, {
+            headers: { 'user-id': userId }
         });
 
-        console.log('📥 Статус ответа:', response.status);
+        console.log('📥 Статус ответа от /access:', response.status);
 
         if (response.ok) {
-            // ✅ Запрос успешен → пользователь админ
-            console.log('✅ Пользователь АДМИНИСТРАТОР (access: 2)');
-            return 2;
-        } else if (response.status === 403) {
-            // ❌ Доступ запрещен → пользователь не админ, но зарегистрирован
-            console.log('ℹ️ Обычный зарегистрированный пользователь (access: 1)');
-            return 1;
+            // 🔥 ДОБАВЛЯЕМ await
+            const data = await response.json();
+            console.log('📥 Ответ от /access:', data);
+
+            // Используем поле accLevel
+            if (data.accLevel !== undefined) {
+                const accessLevel = data.accLevel;
+                console.log(`✅ Уровень доступа получен: ${accessLevel}`);
+                return accessLevel;
+            } else {
+                console.warn('⚠️ Поле accLevel не найдено в ответе:', data);
+                return 1; // По умолчанию модератор
+            }
         } else {
-            // Другая ошибка → все равно считаем зарегистрированным
-            console.warn('⚠️ Неизвестный статус ответа:', response.status);
-            console.log('ℹ️ Считаем пользователя зарегистрированным (access: 1)');
+            console.warn(`⚠️ Не удалось получить access. Статус: ${response.status}`);
             return 1;
         }
 
     } catch (error) {
-        // Ошибка сети или другая ошибка
-        console.error('❌ Ошибка проверки прав:', error.message);
-        console.log('ℹ️ Считаем пользователя зарегистрированным (access: 1)');
+        console.error('❌ Ошибка при запросе уровня доступа:', error.message);
         return 1;
     }
 }
@@ -90,8 +88,9 @@ function updateLastUpdateTime() {
 
 // --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
 async function updateUI() {
-    // Получаем актуальный access с сервера
     currentUserAccess = await fetchUserAccess();
+
+    console.log('🔑 currentUserAccess после запроса:', currentUserAccess);
 
     if (userId) {
         guestControls.style.display = 'none';
@@ -146,15 +145,28 @@ refreshPostsBtn.addEventListener('click', async () => {
 });
 
 // --- ЗАГРУЗКА ПОСТОВ ---
+// --- ЗАГРУЗКА ПОСТОВ ---
 async function loadPosts() {
     postsContainer.innerHTML = '<div class="loading">Загрузка постов...</div>';
 
     try {
-        const url = userId ? `${API_BASE_URL}/posts/${userId}` : `${API_BASE_URL}/posts/guest`;
-        const headers = userId ? {
-            'user-id': userId,
-            'user-access': currentUserAccess
-        } : {};
+        let url;
+        const headers = {};
+
+        if (userId) {
+            // 🔥 Авторизованный пользователь — передаем его ID
+            const filters = {};
+            const filtersQuery = new URLSearchParams({ filters: JSON.stringify(filters) }).toString();
+            url = `${API_BASE_URL}/posts/${userId}?${filtersQuery}`;
+            headers['user-id'] = userId;
+            headers['user-access'] = currentUserAccess;
+        } else {
+            // 🔥 ИСПРАВЛЕНО: Гость — передаем "0" вместо "guest"
+            const filters = {};
+            const filtersQuery = new URLSearchParams({ filters: JSON.stringify(filters) }).toString();
+            url = `${API_BASE_URL}/posts/0?${filtersQuery}`;
+            // Для гостя не отправляем user-id
+        }
 
         console.log('📤 Загружаем посты:', url);
 
@@ -168,9 +180,18 @@ async function loadPosts() {
         const data = await response.json();
         console.log('📥 Получены посты:', data);
 
-        const posts = Array.isArray(data) ? data : (data.posts || data.data || []);
-        displayPosts(posts);
+        let posts = [];
+        if (Array.isArray(data)) {
+            posts = data;
+        } else if (data.posts && Array.isArray(data.posts)) {
+            posts = data.posts;
+        } else if (data.data && Array.isArray(data.data)) {
+            posts = data.data;
+        } else {
+            posts = [];
+        }
 
+        displayPosts(posts);
     } catch (error) {
         console.error('❌ Ошибка загрузки постов:', error);
         postsContainer.innerHTML = `<div class="error">❌ ${error.message}</div>`;

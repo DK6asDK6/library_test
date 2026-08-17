@@ -51,7 +51,7 @@ toggleAction.addEventListener('click', () => {
     setMode(!isLoginMode);
 });
 
-// --- ОСНОВНАЯ ФУНКЦИЯ ВХОДА ---
+// --- ОСНОВНАЯ ФУНКЦИЯ ВХОДА/РЕГИСТРАЦИИ ---
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
     errorMessageDiv.style.display = 'none';
@@ -99,6 +99,7 @@ form.addEventListener('submit', async (event) => {
 
         console.log('📥 Полный ответ сервера:', JSON.stringify(data, null, 2));
 
+        // --- ОБРАБОТКА ОШИБОК ---
         if (!response.ok) {
             let errorMsg = data.message || data.error || 'Произошла ошибка.';
             throw new Error(errorMsg);
@@ -123,11 +124,11 @@ form.addEventListener('submit', async (event) => {
 
             if (userId) {
                 // 🔥 Сохраняем ТОЛЬКО ID и логин
-                // Уровень доступа НЕ СОХРАНЯЕМ
+                // Уровень доступа НЕ СОХРАНЯЕМ!
                 localStorage.setItem('userId', userId);
                 localStorage.setItem('userLogin', userLogin || login);
 
-                // Удаляем старый access если был
+                // Удаляем старый access если был (для безопасности)
                 localStorage.removeItem('userAccess');
 
                 console.log('✅ Успешный вход:', { userId, userLogin });

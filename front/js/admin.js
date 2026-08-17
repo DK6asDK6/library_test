@@ -11,6 +11,7 @@ const userId = localStorage.getItem('userId');
 const userLogin = localStorage.getItem('userLogin');
 
 // --- ПРОВЕРКА ПРАВ АДМИНИСТРАТОРА НА СЕРВЕРЕ ---
+// --- ПРОВЕРКА ПРАВ АДМИНИСТРАТОРА ---
 async function checkAdminAccess() {
     if (!userId) {
         alert('⛔ Доступ запрещен. Требуется авторизация.');
@@ -19,34 +20,41 @@ async function checkAdminAccess() {
     }
 
     try {
-        console.log('🔍 Проверка прав администратора для:', userId);
+        console.log(`🔍 Проверка прав администратора для: ${userId}`);
 
-        // 🔥 ТОЛЬКО GET /api/users - список всех пользователей
-        const response = await fetch(`${API_BASE_URL}/users`, {
-            headers: {
-                'user-id': userId,
-                'Content-Type': 'application/json'
-            }
+        // 1. Пробуем GET /api/users/access/:id
+        const response = await fetch(`${API_BASE_URL}/users/access/${userId}`, {
+            headers: { 'user-id': userId }
         });
 
         if (response.ok) {
-            const users = await response.json();
-            console.log('📥 Получен список пользователей, всего:', users.length);
-
-            const user = users.find(u => u._id === userId || u.id === userId);
-            if (user && user.access === 2) {
-                console.log('✅ Доступ разрешен (администратор)');
+            const data = await response.json();
+            if (data.access === 2) {
+                console.log('✅ Доступ разрешен через /access');
                 return true;
-            } else {
-                console.warn('⛔ Пользователь не админ. Access:', user?.access);
-            }
-        } else {
-            console.warn('⛔ Доступ запрещен. Статус:', response.status);
-            if (response.status === 403) {
-                console.warn('ℹ️ Недостаточно прав для просмотра списка пользователей');
             }
         }
 
+        // 2. Проверяем, есть ли неодобренные посты
+        console.log('🔍 Проверяем через посты...');
+        const filters = {};
+        const filtersQuery = new URLSearchParams({ filters: JSON.stringify(filters) }).toString();
+        const postsResponse = await fetch(`${API_BASE_URL}/posts/${userId}?${filtersQuery}`, {
+            headers: { 'user-id': userId }
+        });
+
+        if (postsResponse.ok) {
+            const posts = await postsResponse.json();
+            const hasPendingPosts = posts.some(post => post.isApproved === 0);
+
+            if (hasPendingPosts) {
+                console.log('✅ Обнаружены неодобренные посты → АДМИН');
+                return true;
+            }
+        }
+
+        // Если ничего не сработало — доступ запрещен
+        console.warn('⛔ Доступ запрещен');
         alert('⛔ Доступ запрещен. Требуются права администратора.');
         window.location.href = 'index.html';
         return false;
