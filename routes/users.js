@@ -76,7 +76,7 @@ router.get('/', async (req, res, next) => {
  * Route: api/users/{id - user ID (or 0 if guest)}
  * Request body:
  * Response body:
- *  - accLevel: user's access
+ *  - message: message with user's access level
  */
 router.get('/access/:id', async (req, res, next) => {
     try{
@@ -94,8 +94,7 @@ router.get('/access/:id', async (req, res, next) => {
             });
         else
             res.status(201).json({
-                message: 'Success',
-                accLevel: user.access
+                message: user.access
             });
 
     } catch (error) {
