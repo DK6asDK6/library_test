@@ -45,18 +45,29 @@
 </div>
 
 <!-- Модальное окно для создания поста -->
+<!-- Модальное окно для создания поста -->
 <div id="create-post-modal" class="modal">
   <div class="modal-content">
     <h2>Создать новый пост</h2>
-    <form id="create-post-form">
+    <form id="create-post-form" enctype="multipart/form-data">
       <div class="form-group">
         <label for="post-title">Заголовок *</label>
         <input type="text" id="post-title" placeholder="Введите заголовок" required>
       </div>
       <div class="form-group">
-        <label for="post-content">Текст поста *</label>
-        <textarea id="post-content" placeholder="Введите текст поста" required></textarea>
+        <label for="post-content">Содержание *</label>
+        <textarea id="post-content" placeholder="Введите содержание поста" required></textarea>
       </div>
+      <div class="form-group">
+        <label for="post-link">🔗 Ссылка (необязательно)</label>
+        <input type="url" id="post-link" placeholder="https://example.com">
+      </div>
+      <div class="form-group">
+        <label for="post-file">📎 Прикрепить файлы (необязательно)</label>
+        <input type="file" id="post-file" multiple accept="image/*,.pdf,.doc,.docx,.txt,.zip">
+        <small class="file-hint">Можно выбрать несколько файлов (изображения, PDF, документы)</small>
+      </div>
+      <div id="file-list" class="file-list"></div>
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" id="cancel-create-btn">Отмена</button>
         <button type="submit" class="btn btn-primary">Сохранить</button>

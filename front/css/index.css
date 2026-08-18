@@ -625,3 +625,112 @@ header span {
 .file-tag .remove-file:hover {
     color: #c82333;
 }
+
+/* --- СТИЛИ ДЛЯ ССЫЛОК В ПОСТАХ --- */
+.post-link {
+    display: inline-block;
+    margin: 8px 0;
+    padding: 6px 12px;
+    background: #e3f2fd;
+    border-radius: 4px;
+    color: #0d47a1;
+    text-decoration: none;
+    font-size: 14px;
+    word-break: break-all;
+}
+
+.post-link:hover {
+    background: #bbdefb;
+}
+
+/* --- СТИЛИ ДЛЯ ФАЙЛОВ В ПОСТАХ --- */
+.post-files {
+    margin: 12px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.file-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 8px;
+    max-width: 150px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.file-item:hover {
+    transform: scale(1.02);
+}
+
+.file-preview {
+    max-width: 100%;
+    max-height: 120px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.file-name {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+    word-break: break-all;
+}
+
+.file-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #4A90D9;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.file-link:hover {
+    background: #e9ecef;
+}
+
+/* --- СТИЛИ ДЛЯ ВЫБОРА ФАЙЛОВ В МОДАЛКЕ --- */
+#post-file {
+    padding: 8px;
+    border: 2px dashed #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+}
+
+#post-file:hover {
+    border-color: #4A90D9;
+}
+
+.file-hint {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+}
+
+.file-list {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.file-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e9ecef;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #555;
+}

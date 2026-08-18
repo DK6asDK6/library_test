@@ -3,9 +3,28 @@
 // Файл: index.js
 // ============================================
 
-// --- КОНФИГУРАЦИЯ ---
-const BASE_URL = window.location.origin;
-const API_BASE_URL = BASE_URL + '/api';
+// === КОНФИГУРАЦИЯ API ===
+const API_CONFIG = {
+    // Порт бекенда (по умолчанию 3000)
+    port: 3000,
+    // Путь к API
+    path: '/api'
+};
+
+const API_BASE_URL = (() => {
+    const { hostname, protocol } = window.location;
+
+    // Если мы на localhost
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return `${protocol}//${hostname}:${API_CONFIG.port}${API_CONFIG.path}`;
+    }
+
+    // Если мы на production
+    // Можно использовать относительный путь или полный URL
+    return API_CONFIG.path;
+})();
+
+console.log('🔗 API_BASE_URL:', API_BASE_URL);
 
 // 🔥 ТОЛЬКО ОДНО ОБЪЯВЛЕНИЕ - В НАЧАЛЕ ФАЙЛА
 const userId = localStorage.getItem('userId');
