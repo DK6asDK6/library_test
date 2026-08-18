@@ -61,7 +61,7 @@ router.get('/', async (req, res, next) => {
         const user = await User.findById(req.body._id);
 
         if (user != null && user.access === 2) {
-            const users = await User.find({}, {_id: 0, password: 0});
+            const users = await User.find();
             res.json(users);
         } else {
             return res.status(404).json({error: 'Access forbidden'});
