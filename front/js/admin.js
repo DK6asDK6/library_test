@@ -4,7 +4,8 @@
 // ============================================
 
 // --- КОНФИГУРАЦИЯ ---
-const API_BASE_URL = 'http://localhost:3000/api';
+const BASE_URL = window.location.origin;
+const API_BASE_URL = BASE_URL + '/api';
 
 // --- ПОЛУЧАЕМ ДАННЫЕ ПОЛЬЗОВАТЕЛЯ ИЗ LOCALSTORAGE ---
 const userId = localStorage.getItem('userId');
