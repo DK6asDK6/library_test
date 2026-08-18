@@ -98,27 +98,23 @@ router.get('/:uid', async (req, res, next) => {
         const uid = req.params.uid;
         let userAccess = 0;
 
-        // Получаем уровень доступа пользователя
         if (uid !== "0") {
-            const user = await User.findById(uid); // ← добавили await!
+            const user = await User.findById(uid);
             if (user) {
                 userAccess = user.access;
             }
         }
 
-        // 🔥 Используем req.query для GET-запроса
         const userFilters = req.query.filters || null;
         let searchTitle = "";
         let wordConditions = [];
 
-        // Обработка фильтра по заголовку
+
         if (userFilters && userFilters.title) {
             searchTitle = userFilters.title.trim();
 
-            // Получаем варианты исправлений через spellchecker
             const wordVariants = getCorrectionVariants(searchTitle);
 
-            // Строим условия для поиска
             wordConditions = wordVariants.map(variants => ({
                 $or: variants.map(variant => ({
                     title: { $regex: variant, $options: 'i' }
@@ -126,17 +122,14 @@ router.get('/:uid', async (req, res, next) => {
             }));
         }
 
-        // Строим запрос
         let query = {
             access: { $lte: userAccess }
         };
 
-        // Добавляем условия поиска по заголовку, если они есть
         if (wordConditions.length > 0) {
             query.$and = wordConditions;
         }
 
-        // Выполняем запрос
         let posts = await Post.find(query, {
             _id: 1,
             sender_id: 1,
@@ -145,22 +138,20 @@ router.get('/:uid', async (req, res, next) => {
             access: 1
         });
 
-        // Если пользователь не админ - показываем только одобренные посты
         if (userAccess < 2) {
             posts = posts.filter(item => item.isApproved === 1);
         }
 
-        // Добавляем имя автора к каждому посту
         for (let post of posts) {
             const user = await User.findById(post.sender_id);
             post = post.toObject();
-            post.sender_name = user ? user.login : 'Неизвестен';
+            post.sender_name = user ? user.login : 'Unknown';
         }
 
         res.json(posts);
 
     } catch (error) {
-        console.error('❌ Ошибка в GET /:uid:', error);
+        console.error('Error in /:uid:', error);
         next(error);
     }
 });

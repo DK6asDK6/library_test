@@ -44,7 +44,8 @@ mongoose.connect(process.env.MONGODB_URI, {}).then(() => {
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 
-
+// Setting front/index.html as index file
+app.use(express.static('front', {index: 'index.html'}));
 
 // Basic route
 app.get('/', (req, res) => {
