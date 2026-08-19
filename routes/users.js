@@ -51,22 +51,32 @@ router.post('/', validateUser, validationHandler, async (req, res, next) => {
 /*
  * Get all users request (only admins allowed)
  * Route: api/users/{aid - admin's ID}
- * Request body:
+ * Request body: none
  * Response body:
  *  - users: array of structures with 'login' and 'access' fields
  */
 router.get('/:aid', async (req, res, next) => {
     try {
-        const user = await User.findById(req.params.aid);
+        const { aid } = req.params;
 
-        if (user != null && user.access === 2) {
-            const users = await User.find({}, {password: 0});
-            const cursor = await users.toArray();
-            res.json(cursor);
-        } else {
-            return res.status(404).json({error: 'Access forbidden'});
+        // 1. Проверяем, что пользователь существует
+        const user = await User.findById(aid);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
         }
+
+        // 2. Проверяем, что это админ (access === 2)
+        if (user.access !== 2) {
+            return res.status(403).json({ error: 'Access forbidden - admin rights required' });
+        }
+
+        // 3. ✅ ПРАВИЛЬНО: возвращаем всех пользователей (без паролей)
+        const users = await User.find({}, { password: 0 });
+        return res.json(users);
+
     } catch (error) {
+        console.error('❌ Ошибка в GET /:aid:', error);
         next(error);
     }
 });

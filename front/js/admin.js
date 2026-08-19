@@ -3,28 +3,8 @@
 // Файл: admin.js
 // ============================================
 
-// === КОНФИГУРАЦИЯ API ===
-const API_CONFIG = {
-    // Порт бекенда (по умолчанию 3000)
-    port: 3000,
-    // Путь к API
-    path: '/api'
-};
-
-const API_BASE_URL = (() => {
-    const { hostname, protocol } = window.location;
-
-    // Если мы на localhost
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return `${protocol}//${hostname}:${API_CONFIG.port}${API_CONFIG.path}`;
-    }
-
-    // Если мы на production
-    // Можно использовать относительный путь или полный URL
-    return API_CONFIG.path;
-})();
-
-console.log('🔗 API_BASE_URL:', API_BASE_URL);
+// --- КОНФИГУРАЦИЯ ---
+const API_BASE_URL = 'http://localhost:3000/api';
 
 // --- ПОЛУЧАЕМ ДАННЫЕ ПОЛЬЗОВАТЕЛЯ ИЗ LOCALSTORAGE ---
 const userId = localStorage.getItem('userId');
@@ -51,34 +31,16 @@ async function checkAdminAccess() {
             const data = await response.json();
             console.log('📥 Ответ от /access:', data);
 
-            // 🔥 ИЗВЛЕКАЕМ ЧИСЛО ИЗ ПОЛЯ message
-            let accessLevel = null;
-
-            if (data.message !== undefined && typeof data.message === 'number') {
-                accessLevel = data.message;
-            } else if (data.accLevel !== undefined) {
-                accessLevel = data.accLevel;
-            } else if (typeof data === 'number') {
-                accessLevel = data;
+            // 🔥 Используем поле message (сервер возвращает { message: access })
+            if (data.message === 2) {
+                console.log('✅ Доступ разрешен (администратор)');
+                return true;
+            } else {
+                console.log(`ℹ️ Уровень доступа: ${data.message} (администратор: 2)`);
+                alert(`⛔ Доступ запрещен. Ваш уровень доступа: ${data.message}`);
+                window.location.href = 'index.html';
+                return false;
             }
-
-            if (accessLevel !== null) {
-                console.log(`📥 Уровень доступа: ${accessLevel}`);
-                if (accessLevel === 2) {
-                    console.log('✅ Доступ разрешен (администратор)');
-                    return true;
-                } else {
-                    console.log(`ℹ️ Уровень доступа: ${accessLevel} (администратор: 2)`);
-                    alert(`⛔ Доступ запрещен. Ваш уровень доступа: ${accessLevel}`);
-                    window.location.href = 'index.html';
-                    return false;
-                }
-            }
-
-            console.warn('⚠️ Неожиданный формат ответа:', data);
-            alert('⛔ Ошибка проверки прав доступа.');
-            window.location.href = 'index.html';
-            return false;
         } else {
             console.warn(`⚠️ Не удалось проверить права. Статус: ${response.status}`);
             alert('⛔ Ошибка проверки прав доступа.');
@@ -300,19 +262,52 @@ async function loadUsers() {
     try {
         console.log('👥 Загружаем список пользователей...');
 
-        const response = await fetch(`${API_BASE_URL}/users`, {
+        // 🔥 ИСПРАВЛЕНО: GET /users/:aid с заголовком user-id
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
             headers: {
                 'user-id': userId
             }
         });
 
+        console.log('📥 Статус ответа /users:', response.status);
+
         if (!response.ok) {
+            if (response.status === 403) {
+                usersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="loading-text" style="color: #856404;">
+                            ⚠️ Доступ запрещен. Требуются права администратора.
+                        </td>
+                    </tr>
+                `;
+                return;
+            } else if (response.status === 401) {
+                usersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="loading-text" style="color: #856404;">
+                            ⚠️ Не авторизован. Войдите заново.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
             throw new Error(`Ошибка: ${response.status}`);
         }
 
-        allUsers = await response.json();
-        console.log('✅ Загружены пользователи:', allUsers.length);
+        const data = await response.json();
+        console.log('📥 Получены пользователи:', data);
+
+        if (Array.isArray(data)) {
+            allUsers = data;
+        } else if (data.users && Array.isArray(data.users)) {
+            allUsers = data.users;
+        } else {
+            allUsers = [];
+            console.warn('⚠️ Неожиданный формат ответа:', data);
+        }
+
         renderUsers(allUsers);
+        updateStats();
 
     } catch (error) {
         console.error('❌ Ошибка загрузки пользователей:', error);
