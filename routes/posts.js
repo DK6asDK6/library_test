@@ -49,7 +49,6 @@ router.post('/:uid', validatePost, validationHandler, upload.array('files', 20),
         const uid = req.params.uid;
 
         let isApproved = false;
-        let post = null;
 
         if (uid !== "0")
             admin = User.findById(uid);
@@ -75,6 +74,8 @@ router.post('/:uid', validatePost, validationHandler, upload.array('files', 20),
 
         post = new Post(req.body.post);
         post.sender_id = req.params.uid;
+        post.sender_name = admin.login;
+        post.isApproved = isApproved ? 1 : 0;
         post.files = fileMetadata;
 
         await post.save();
@@ -143,9 +144,7 @@ router.get('/:uid', async (req, res, next) => {
         }
 
         for (let post of posts) {
-            const user = await User.findById(post.sender_id);
             post = post.toObject();
-            post.sender_name = user ? user.login : 'Unknown';
         }
 
         res.json(posts);

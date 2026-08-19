@@ -253,7 +253,78 @@ router.post('/reset_admin/:id', async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-})
+});
+
+/*
+ * Delete account request
+ * Route: api/users/{id - user ID (or 0 if guest)}
+ * Request body:
+ *  - password: user password to approve account deletion
+ * Response body:
+ *  - message
+ */
+router.delete('/:id', async (req, res, next) => {
+    try{
+        const id = req.params.id;
+        const pwd = req.body.password;
+
+        if (!pwd) res.status(400).json({ error: 'Password is required' });
+
+
+        if (id === "0") res.status(404).json({ error: 'Access forbidden' });
+
+        let user = await User.findById(id);
+
+        if (!user) res.status(404).json({ error: 'Failed to find user' });
+
+        const isValid = await user.isValidPassword(pwd);
+        if (!isValid) res.status(404).json({ error: 'Incorrect password' });
+
+        const removedUser = await User.findByIdAndDelete(id);
+
+        if (!removedUser) return res.status(404).json({ error: 'Failed to find user' });
+
+        res.json({message: 'Success'});
+    } catch (error) {
+        next(error);
+    }
+});
+
+/*
+ * Delete other's account request (admins only)
+ * Route: api/users/adm/{id - admin's ID (or 0 if guest)}
+ * Request body:
+ *  - us_login: user's login
+ *  - password: admin's password to approve user's deletion
+ * Response body:
+ *  - message
+ */
+router.delete('/adm/:id', async (req, res, next) => {
+    try{
+        const id = req.params.id;
+        const {us_login, pwd} = req.body;
+
+        if (id === "0") res.status(404).json({ error: 'Access forbidden' });
+        if (!pwd) res.status(400).json({ error: 'Old and new passwords required' });
+
+        const admin = await User.findById(id);
+
+        if (!admin) res.status(404).json({ error: 'Access forbidden' });
+
+        const isValid = await admin.isValidPassword(pwd);
+
+        if (!isValid) res.status(404).json({ error: 'Incorrect password' });
+
+        const user = await User.findByIdAndDelete(us_login);
+
+        if (!user) return res.status(404).json({ error: 'Failed to find user' });
+
+        res.json({message: 'Success'});
+
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = router;
 

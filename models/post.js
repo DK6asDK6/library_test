@@ -12,6 +12,7 @@ const mongoose = require('mongoose');
  * Post schema structure
  * Fields:
  *  - sender_id - sender ID, referred to 'User' schema
+ *  - sender_name - sender username
  *  - title - post's title, up to 200 symbols
  *  - text - inner text (if exists).
  *  - link - link to Web Archive page (if exists)
@@ -22,6 +23,10 @@ const postSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: [true, 'User ID is required']
+    },
+    sender_name: {
+        type: String,
+        required: [true, 'Author username is required']
     },
     title: {
         type: String,
