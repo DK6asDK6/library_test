@@ -42,7 +42,7 @@ const {getCorrectionVariants} = require('../middleware/spellcheck');
  * Response body:
  *  - post - whole post structure
  */
-router.post('/:uid', validatePost, validationHandler, upload.array('files', 20), async (req, res, next) => {
+router.post('/:uid', upload.array('files', 20), validatePost, validationHandler, async (req, res, next) => {
     try {
         let admin = null;
         const files = req.files || []
@@ -135,6 +135,9 @@ router.get('/:uid', async (req, res, next) => {
             _id: 1,
             sender_id: 1,
             title: 1,
+            text: 1,        // ← ДОБАВИТЬ
+            link: 1,        // ← ДОБАВИТЬ
+            files: 1,       // ← ДОБАВИТЬ
             isApproved: 1,
             access: 1
         });
