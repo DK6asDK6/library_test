@@ -52,8 +52,6 @@ const cancelCreateBtn = document.getElementById('cancel-create-btn');
 const createPostForm = document.getElementById('create-post-form');
 
 // --- ФУНКЦИЯ ПОЛУЧЕНИЯ ACCESS С СЕРВЕРА ---
-// --- ФУНКЦИЯ ПОЛУЧЕНИЯ ACCESS С СЕРВЕРА ---
-// --- ФУНКЦИЯ ПОЛУЧЕНИЯ ACCESS С СЕРВЕРА ---
 async function fetchUserAccess() {
     if (!userId) {
         console.log('👤 Гость (access: 0)');
@@ -63,7 +61,6 @@ async function fetchUserAccess() {
     try {
         console.log(`🔍 Запрашиваем уровень доступа для пользователя: ${userId}`);
 
-        // 🔥 ДОБАВЛЯЕМ await
         const response = await fetch(`${API_BASE_URL}/users/access/${userId}`, {
             headers: { 'user-id': userId }
         });
@@ -71,19 +68,30 @@ async function fetchUserAccess() {
         console.log('📥 Статус ответа от /access:', response.status);
 
         if (response.ok) {
-            // 🔥 ДОБАВЛЯЕМ await
             const data = await response.json();
             console.log('📥 Ответ от /access:', data);
 
-            // Используем поле accLevel
-            if (data.accLevel !== undefined) {
-                const accessLevel = data.accLevel;
+            // 🔥 ИЗВЛЕКАЕМ ЧИСЛО ИЗ ПОЛЯ message
+            if (data.message !== undefined && typeof data.message === 'number') {
+                const accessLevel = data.message;
                 console.log(`✅ Уровень доступа получен: ${accessLevel}`);
                 return accessLevel;
-            } else {
-                console.warn('⚠️ Поле accLevel не найдено в ответе:', data);
-                return 1; // По умолчанию модератор
             }
+
+            // Если вдруг пришел accLevel (старый формат)
+            if (data.accLevel !== undefined) {
+                console.log(`✅ Уровень доступа (accLevel): ${data.accLevel}`);
+                return data.accLevel;
+            }
+
+            // Если вдруг пришло просто число
+            if (typeof data === 'number') {
+                console.log(`✅ Уровень доступа (число): ${data}`);
+                return data;
+            }
+
+            console.warn('⚠️ Неожиданный формат ответа:', data);
+            return 1;
         } else {
             console.warn(`⚠️ Не удалось получить access. Статус: ${response.status}`);
             return 1;

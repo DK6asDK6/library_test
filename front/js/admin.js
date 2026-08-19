@@ -30,7 +30,6 @@ console.log('🔗 API_BASE_URL:', API_BASE_URL);
 const userId = localStorage.getItem('userId');
 const userLogin = localStorage.getItem('userLogin');
 
-// --- ПРОВЕРКА ПРАВ АДМИНИСТРАТОРА НА СЕРВЕРЕ ---
 // --- ПРОВЕРКА ПРАВ АДМИНИСТРАТОРА ---
 async function checkAdminAccess() {
     if (!userId) {
@@ -42,42 +41,50 @@ async function checkAdminAccess() {
     try {
         console.log(`🔍 Проверка прав администратора для: ${userId}`);
 
-        // 1. Пробуем GET /api/users/access/:id
         const response = await fetch(`${API_BASE_URL}/users/access/${userId}`, {
             headers: { 'user-id': userId }
         });
 
+        console.log('📥 Статус ответа от /access:', response.status);
+
         if (response.ok) {
             const data = await response.json();
-            if (data.access === 2) {
-                console.log('✅ Доступ разрешен через /access');
-                return true;
+            console.log('📥 Ответ от /access:', data);
+
+            // 🔥 ИЗВЛЕКАЕМ ЧИСЛО ИЗ ПОЛЯ message
+            let accessLevel = null;
+
+            if (data.message !== undefined && typeof data.message === 'number') {
+                accessLevel = data.message;
+            } else if (data.accLevel !== undefined) {
+                accessLevel = data.accLevel;
+            } else if (typeof data === 'number') {
+                accessLevel = data;
             }
-        }
 
-        // 2. Проверяем, есть ли неодобренные посты
-        console.log('🔍 Проверяем через посты...');
-        const filters = {};
-        const filtersQuery = new URLSearchParams({ filters: JSON.stringify(filters) }).toString();
-        const postsResponse = await fetch(`${API_BASE_URL}/posts/${userId}?${filtersQuery}`, {
-            headers: { 'user-id': userId }
-        });
-
-        if (postsResponse.ok) {
-            const posts = await postsResponse.json();
-            const hasPendingPosts = posts.some(post => post.isApproved === 0);
-
-            if (hasPendingPosts) {
-                console.log('✅ Обнаружены неодобренные посты → АДМИН');
-                return true;
+            if (accessLevel !== null) {
+                console.log(`📥 Уровень доступа: ${accessLevel}`);
+                if (accessLevel === 2) {
+                    console.log('✅ Доступ разрешен (администратор)');
+                    return true;
+                } else {
+                    console.log(`ℹ️ Уровень доступа: ${accessLevel} (администратор: 2)`);
+                    alert(`⛔ Доступ запрещен. Ваш уровень доступа: ${accessLevel}`);
+                    window.location.href = 'index.html';
+                    return false;
+                }
             }
-        }
 
-        // Если ничего не сработало — доступ запрещен
-        console.warn('⛔ Доступ запрещен');
-        alert('⛔ Доступ запрещен. Требуются права администратора.');
-        window.location.href = 'index.html';
-        return false;
+            console.warn('⚠️ Неожиданный формат ответа:', data);
+            alert('⛔ Ошибка проверки прав доступа.');
+            window.location.href = 'index.html';
+            return false;
+        } else {
+            console.warn(`⚠️ Не удалось проверить права. Статус: ${response.status}`);
+            alert('⛔ Ошибка проверки прав доступа.');
+            window.location.href = 'index.html';
+            return false;
+        }
 
     } catch (error) {
         console.error('❌ Ошибка проверки прав:', error);
