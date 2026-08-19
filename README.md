@@ -192,6 +192,8 @@ The main endpoints are:
 - POST /api/users/access - Set user's access level (request allowed only for admins)
 - POST /api/users/reset - Reset user's password (old password required)
 - POST /api/users/reset_admin - Reset other user's password (request allowed only for admins)
+- DELETE /api/users/:id - Delete an Account
+- DELETE /api/users/adm/:id - Delete other's user account (request allowed only for admins)
 - POST /api/posts/:uid - Create new post (access 1 or more required)
 - GET /api/posts/:uid - Show all posts (if user is not admin, only approved ones are shown)
 - GET /api/posts/one/:id - Show one post
