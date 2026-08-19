@@ -159,7 +159,7 @@ function setupEventListeners() {
         userToDelete = null;
     });
 
-    // Сохранение прав пользователя
+    // --- СОХРАНЕНИЕ ПРАВ ПОЛЬЗОВАТЕЛЯ ---
     editUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -169,20 +169,21 @@ function setupEventListeners() {
         }
 
         const newAccess = parseInt(editUserAccess.value);
-        const userIdToEdit = userToEdit._id || userToEdit.id;
+        const userLogin = userToEdit.login; // ← Используем login, а не id
 
-        console.log(`✏️ Меняем права пользователя ${userToEdit.login} на ${newAccess}`);
+        console.log(`✏️ Меняем права пользователя ${userLogin} на ${newAccess}`);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/users/access`, {
+            // 🔥 ИСПРАВЛЕНО: правильный URL с ID администратора
+            const response = await fetch(`${API_BASE_URL}/users/access/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'user-id': userId
                 },
                 body: JSON.stringify({
-                    userId: userIdToEdit,
-                    access: newAccess
+                    us_login: userLogin,  // ← поле из вашего бекенда
+                    s_acc: newAccess       // ← поле из вашего бекенда
                 })
             });
 
@@ -195,7 +196,7 @@ function setupEventListeners() {
             console.log('✅ Права изменены:', result);
 
             const roleText = newAccess === 2 ? 'Администратор' : newAccess === 1 ? 'Модератор' : 'Гость';
-            alert(`✅ Права пользователя "${userToEdit.login}" изменены на "${roleText}"`);
+            alert(`✅ Права пользователя "${userLogin}" изменены на "${roleText}"`);
 
             editUserModal.style.display = 'none';
             userToEdit = null;

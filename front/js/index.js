@@ -20,7 +20,6 @@ const API_BASE_URL = (() => {
     }
 
     // Если мы на production
-    // Можно использовать относительный путь или полный URL
     return API_CONFIG.path;
 })();
 
@@ -172,7 +171,6 @@ refreshPostsBtn.addEventListener('click', async () => {
     }
 });
 
-// --- ЗАГРУЗКА ПОСТОВ ---
 // --- ЗАГРУЗКА ПОСТОВ ---
 async function loadPosts() {
     postsContainer.innerHTML = '<div class="loading">Загрузка постов...</div>';
@@ -362,11 +360,24 @@ async function handleDeletePost(event) {
     }
 }
 
+// --- СОЗДАНИЕ ПОСТА (С ПЕРЕДАЧЕЙ ИМЕНИ АВТОРА) ---
+createPostBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+    document.getElementById('post-title').value = '';
+    document.getElementById('post-content').value = '';
+});
+
+cancelCreateBtn.addEventListener('click', () => modal.style.display = 'none');
+modal.addEventListener('click', (event) => {
+    if (event.target === modal) modal.style.display = 'none';
+});
+
 // --- СОЗДАНИЕ ПОСТА ---
 createPostBtn.addEventListener('click', () => {
     modal.style.display = 'flex';
     document.getElementById('post-title').value = '';
     document.getElementById('post-content').value = '';
+    document.getElementById('post-link').value = ''; // ← Очищаем поле ссылки
 });
 
 cancelCreateBtn.addEventListener('click', () => modal.style.display = 'none');
@@ -379,9 +390,16 @@ createPostForm.addEventListener('submit', async (event) => {
 
     const title = document.getElementById('post-title').value.trim();
     const content = document.getElementById('post-content').value.trim();
+    const link = document.getElementById('post-link')?.value.trim() || '';
 
     if (!title || !content) {
         alert('❌ Заголовок и содержание обязательны');
+        return;
+    }
+
+    if (!userId) {
+        alert('❌ Вы не авторизованы. Войдите заново.');
+        window.location.href = 'login.html';
         return;
     }
 
@@ -391,20 +409,43 @@ createPostForm.addEventListener('submit', async (event) => {
     submitBtn.textContent = '⏳ Отправка...';
 
     try {
+        const url = `${API_BASE_URL}/posts/${userId}`;
+        console.log('📤 URL запроса:', url);
+
+        // 🔥 БАЗОВАЯ СТРУКТУРА ПОСТА (без ссылки)
+        const postData = {
+            sender_id: userId,
+            sender_name: userLogin || 'Неизвестен',
+            title: title,
+            text: content,
+            access: 0
+        };
+
+        // 🔥 ДОБАВЛЯЕМ ССЫЛКУ, ТОЛЬКО ЕСЛИ ОНА НЕ ПУСТАЯ
+        if (link && link.trim() !== '') {
+            postData.link = link.trim();
+        }
+
+        // 🔥 ПРАВИЛЬНАЯ СТРУКТУРА ДЛЯ МОДЕЛИ POST
         const requestData = {
+            // Данные для валидации (на случай, если сервер проверяет корневые поля)
+            sender_id: userId,
+            sender_name: userLogin || 'Неизвестен',
             title: title,
             text: content,
             access: 0,
-            post: {
-                title: title,
-                text: content,
-                access: 0
-            }
+            // Данные для создания поста
+            post: postData
         };
 
-        console.log('📤 Отправляем пост:', requestData);
+        // 🔥 ДОБАВЛЯЕМ ССЫЛКУ В КОРНЕВЫЕ ПОЛЯ, ЕСЛИ ОНА ЕСТЬ
+        if (link && link.trim() !== '') {
+            requestData.link = link.trim();
+        }
 
-        const response = await fetch(`${API_BASE_URL}/posts/${userId}`, {
+        console.log('📤 Данные запроса:', requestData);
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

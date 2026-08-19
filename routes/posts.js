@@ -239,27 +239,32 @@ router.post('/appr/:uid', async (req, res, next) => {
  * Response body:
  *  - message
  */
-router.delete('/:id/:uid', async (req, res, next) => {
+// routes/posts.js
+// Удаление поста (только для администраторов)
+// DELETE /api/posts/:uid/:id
+// :uid - ID администратора, :id - ID поста
+router.delete('/:uid/:id', async (req, res) => {
     try {
-        const {id, uid} = req.params;
-        let admin = null;
+        // 1. Получаем ID администратора и ID поста из URL
+        const { uid, id } = req.params;
 
-        if (uid !== "0")
-            admin = await User.findById(uid);
-
-        if (!admin || admin.access < 2)
-            res.status(404).send('Access forbidden');
-
-        const post = await Post.findByIdAndDelete(id);
-
-        if (!post) {
-            return res.status(404).json({ error: 'No post found' });
+        // Проверка прав администратора
+        const admin = await User.findById(uid);
+        if (!admin || admin.access !== 2) {
+            return res.status(403).json({ error: 'Forbidden: Admin rights required' });
         }
 
-        res.json({ message: 'Success' });
+        // Удаление поста из базы данных
+        const deletedPost = await Post.findByIdAndDelete(id);
+        if (!deletedPost) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        // Успешный ответ
+        return res.status(200).json({ message: 'Post deleted successfully', postId: id });
     } catch (error) {
-        // res.status(500).json({ error: error.message });
-        next(error);
+        console.error('Error deleting post:', error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 });
 

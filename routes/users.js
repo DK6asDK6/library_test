@@ -157,30 +157,55 @@ router.post('/login', async (req, res, next) => {
  *  - message
  */
 router.post('/access/:id', async (req, res, next) => {
-    try{
-        const {us_login, s_acc} = req.body;
+    try {
+        const { us_login, s_acc } = req.body;
         const id = req.params.id;
 
+        // 🔥 ДОБАВЛЯЕМ await
         let admin = null;
 
-        if (id !== "0")
-            admin = User.findById(id);
-
-        if (admin != null && admin.access === 2) {
-            User.updateOne({
-                login: us_login},
-                {
-                    $set: {
-                        access: s_acc
-                    }
-                });
-
-            res.status(200).json({message: 'Success'});
-        } else {
-            return res.status(404).json({error: 'Access forbidden'});
+        if (id !== "0") {
+            admin = await User.findById(id); // ← добавили await
         }
 
+        // Проверка, что админ существует и имеет права
+        if (!admin || admin.access !== 2) {
+            return res.status(403).json({ error: 'Access forbidden - admin rights required' });
+        }
+
+        // Проверка, что передан логин и уровень доступа
+        if (!us_login || s_acc === undefined) {
+            return res.status(400).json({ error: 'us_login and s_acc are required' });
+        }
+
+        // Проверка, что s_acc в допустимом диапазоне
+        if (![0, 1, 2].includes(s_acc)) {
+            return res.status(400).json({ error: 's_acc must be 0, 1, or 2' });
+        }
+
+        // 🔥 ДОБАВЛЯЕМ await ДЛЯ updateOne
+        const result = await User.updateOne(
+            { login: us_login },
+            { $set: { access: s_acc } }
+        );
+
+        // Проверка, что пользователь найден и обновлен
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        console.log(`✅ Права пользователя ${us_login} изменены на ${s_acc} администратором ${id}`);
+
+        return res.status(200).json({
+            message: 'Success',
+            user: {
+                login: us_login,
+                access: s_acc
+            }
+        });
+
     } catch (error) {
+        console.error('❌ Ошибка в POST /access/:id:', error);
         next(error);
     }
 });
@@ -272,30 +297,42 @@ router.post('/reset_admin/:id', async (req, res, next) => {
  * Response body:
  *  - message
  */
-router.delete('/:id', async (req, res, next) => {
-    try{
-        const id = req.params.id;
-        const pwd = req.body.password;
+// Удаление пользователя (только для администраторов)
+// DELETE /api/users/:id
+router.delete('/:id', async (req, res) => {
+    try {
+        // 1. Получаем ID администратора из заголовка
+        const adminId = req.headers['user-id'];
+        // 2. Получаем ID пользователя, которого нужно удалить, из URL
+        const userIdToDelete = req.params.id;
 
-        if (!pwd) res.status(400).json({ error: 'Password is required' });
+        // Проверка авторизации
+        if (!adminId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
 
+        // Проверка прав администратора
+        const admin = await User.findById(adminId);
+        if (!admin || admin.access !== 2) {
+            return res.status(403).json({ error: 'Forbidden: Admin rights required' });
+        }
 
-        if (id === "0") res.status(404).json({ error: 'Access forbidden' });
+        // Запрет на удаление самого себя
+        if (adminId === userIdToDelete) {
+            return res.status(400).json({ error: 'Cannot delete yourself' });
+        }
 
-        let user = await User.findById(id);
+        // Удаление пользователя из базы данных
+        const deletedUser = await User.findByIdAndDelete(userIdToDelete);
+        if (!deletedUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
-        if (!user) res.status(404).json({ error: 'Failed to find user' });
-
-        const isValid = await user.isValidPassword(pwd);
-        if (!isValid) res.status(404).json({ error: 'Incorrect password' });
-
-        const removedUser = await User.findByIdAndDelete(id);
-
-        if (!removedUser) return res.status(404).json({ error: 'Failed to find user' });
-
-        res.json({message: 'Success'});
+        // Успешный ответ
+        return res.status(200).json({ message: 'User deleted successfully', userId: userIdToDelete });
     } catch (error) {
-        next(error);
+        console.error('Error deleting user:', error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 });
 
