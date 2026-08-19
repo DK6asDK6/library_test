@@ -302,16 +302,16 @@ router.delete('/:id', async (req, res, next) => {
 router.delete('/adm/:id', async (req, res, next) => {
     try{
         const id = req.params.id;
-        const {us_login, pwd} = req.body;
+        const {us_login, password} = req.body;
 
         if (id === "0") res.status(404).json({ error: 'Access forbidden' });
-        if (!pwd) res.status(400).json({ error: 'Old and new passwords required' });
+        if (!password) res.status(400).json({ error: 'Old and new passwords required' });
 
         const admin = await User.findById(id);
 
         if (!admin) res.status(404).json({ error: 'Access forbidden' });
 
-        const isValid = await admin.isValidPassword(pwd);
+        const isValid = await admin.isValidPassword(password);
 
         if (!isValid) res.status(404).json({ error: 'Incorrect password' });
 
