@@ -236,7 +236,12 @@ function displayPosts(posts) {
         const isApproved = post.isApproved === 1;
         const statusClass = isApproved ? 'status-approved' : 'status-pending';
         const statusText = isApproved ? '✅ Одобрен' : '⏳ На модерации';
-        const authorLogin = post.sender_id?.login || post.authorLogin || 'Неизвестен';
+
+        // 🔥 ПРОБУЕМ РАЗНЫЕ ИСТОЧНИКИ ИМЕНИ АВТОРА
+        const authorLogin = post.sender_name ||
+            post.sender_id?.login ||
+            post.authorLogin ||
+            'Неизвестен';
 
         html += `
             <div class="post-card">

@@ -97,6 +97,31 @@
     </div>
 </div>
 
+<!-- Модальное окно для смены пароля -->
+<div id="reset-password-modal" class="modal">
+    <div class="modal-content">
+        <h2>🔑 Смена пароля</h2>
+        <form id="reset-password-form">
+            <div class="form-group">
+                <label>Пользователь</label>
+                <input type="text" id="reset-user-login" disabled>
+            </div>
+            <div class="form-group">
+                <label for="reset-new-password">Новый пароль</label>
+                <input type="password" id="reset-new-password" placeholder="Введите новый пароль" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label for="reset-confirm-password">Подтверждение пароля</label>
+                <input type="password" id="reset-confirm-password" placeholder="Подтвердите новый пароль" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="cancel-reset-btn">Отмена</button>
+                <button type="submit" class="btn btn-primary">Сбросить пароль</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Модальное окно для изменения прав пользователя -->
 <div id="edit-user-modal" class="modal">
     <div class="modal-content">

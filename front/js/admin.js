@@ -68,6 +68,12 @@ const usersTableBody = document.getElementById('users-table-body');
 const postsTableBody = document.getElementById('posts-table-body');
 const userSearch = document.getElementById('user-search');
 const refreshPostsBtn = document.getElementById('refresh-posts-btn');
+const resetPasswordModal = document.getElementById('reset-password-modal');
+const resetPasswordForm = document.getElementById('reset-password-form');
+const resetUserLogin = document.getElementById('reset-user-login');
+const resetNewPassword = document.getElementById('reset-new-password');
+const resetConfirmPassword = document.getElementById('reset-confirm-password');
+const cancelResetBtn = document.getElementById('cancel-reset-btn');
 
 // Модальные окна
 const editUserModal = document.getElementById('edit-user-modal');
@@ -86,6 +92,7 @@ let allUsers = [];
 let allPosts = [];
 let userToDelete = null;
 let userToEdit = null;
+let userToReset = null;
 
 // --- ИНИЦИАЛИЗАЦИЯ ---
 async function initAdmin() {
@@ -372,7 +379,7 @@ function renderUsers(users) {
     if (!users || users.length === 0) {
         usersTableBody.innerHTML = `
             <tr>
-                <td colspan="4" class="loading-text">👥 Пользователей пока нет</td>
+                <td colspan="5" class="loading-text">👥 Пользователей пока нет</td>
             </tr>
         `;
         return;
@@ -395,6 +402,11 @@ function renderUsers(users) {
                                 data-userid="${user._id || user.id}">
                             ✏️
                         </button>
+                        <!-- 🔥 КНОПКА СМЕНЫ ПАРОЛЯ -->
+                        <button class="btn btn-warning btn-sm reset-password-btn" 
+                                data-login="${escapeHtml(user.login)}">
+                            🔑
+                        </button>
                         ${!isCurrentUser ? `
                             <button class="btn btn-danger btn-sm delete-user-btn" 
                                     data-userid="${user._id || user.id}"
@@ -412,7 +424,7 @@ function renderUsers(users) {
 
     usersTableBody.innerHTML = html;
 
-    // Добавляем обработчики для кнопок редактирования
+    // Обработчики для кнопок редактирования
     document.querySelectorAll('.edit-user-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const userId = btn.dataset.userid;
@@ -420,7 +432,15 @@ function renderUsers(users) {
         });
     });
 
-    // Добавляем обработчики для кнопок удаления
+    // 🔥 ОБРАБОТЧИКИ ДЛЯ КНОПОК СМЕНЫ ПАРОЛЯ
+    document.querySelectorAll('.reset-password-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const login = btn.dataset.login;
+            openResetPasswordModal(login);
+        });
+    });
+
+    // Обработчики для кнопок удаления
     document.querySelectorAll('.delete-user-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const userId = btn.dataset.userid;
@@ -524,6 +544,91 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// --- ОТКРЫТИЕ МОДАЛКИ СМЕНЫ ПАРОЛЯ ---
+function openResetPasswordModal(userLogin) {
+    userToReset = userLogin;
+    resetUserLogin.value = userLogin;
+    resetNewPassword.value = '';
+    resetConfirmPassword.value = '';
+    resetPasswordModal.style.display = 'flex';
+}
+
+// --- ЗАКРЫТИЕ МОДАЛКИ СМЕНЫ ПАРОЛЯ ---
+cancelResetBtn.addEventListener('click', () => {
+    resetPasswordModal.style.display = 'none';
+    userToReset = null;
+});
+
+resetPasswordModal.addEventListener('click', (e) => {
+    if (e.target === resetPasswordModal) {
+        resetPasswordModal.style.display = 'none';
+        userToReset = null;
+    }
+});
+
+// --- СМЕНА ПАРОЛЯ ---
+resetPasswordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const newPassword = resetNewPassword.value.trim();
+    const confirmPassword = resetConfirmPassword.value.trim();
+
+    if (!userToReset) {
+        alert('Ошибка: пользователь не выбран');
+        return;
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+        alert('❌ Пароль должен содержать минимум 6 символов');
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        alert('❌ Пароли не совпадают');
+        return;
+    }
+
+    const submitBtn = resetPasswordForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Отправка...';
+
+    try {
+        // 🔥 ИСПОЛЬЗУЕМ СУЩЕСТВУЮЩИЙ ЭНДПОИНТ
+        const response = await fetch(`${API_BASE_URL}/users/reset_admin/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id': userId
+            },
+            body: JSON.stringify({
+                us_login: userToReset,  // ← поле из вашего бекенда
+                new_pwd: newPassword     // ← поле из вашего бекенда
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Ошибка: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('✅ Пароль изменен:', result);
+
+        alert(`✅ Пароль пользователя "${userToReset}" успешно изменен!`);
+
+        resetPasswordModal.style.display = 'none';
+        userToReset = null;
+
+    } catch (error) {
+        console.error('❌ Ошибка смены пароля:', error);
+        alert(`❌ Ошибка: ${error.message}`);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+});
 
 // --- ОТКРЫТИЕ МОДАЛКИ РЕДАКТИРОВАНИЯ ---
 function openEditUserModal(userId) {
