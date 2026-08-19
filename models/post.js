@@ -26,7 +26,7 @@ const postSchema = new mongoose.Schema({
     },
     sender_name: {
         type: String,
-        required: [true, 'Author username is required']
+        default: "Anonym",
     },
     title: {
         type: String,
