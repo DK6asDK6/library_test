@@ -50,15 +50,14 @@ router.post('/', validateUser, validationHandler, async (req, res, next) => {
 
 /*
  * Get all users request (only admins allowed)
- * Route: api/users
+ * Route: api/users/{aid - admin's ID}
  * Request body:
- *  - _id - user's id
  * Response body:
  *  - users: array of structures with 'login' and 'access' fields
  */
-router.get('/', async (req, res, next) => {
+router.get('/:aid', async (req, res, next) => {
     try {
-        const user = await User.findById(req.body._id);
+        const user = await User.findById(req.params.aid);
 
         if (user != null && user.access === 2) {
             const users = await User.find({}, {password: 0});
