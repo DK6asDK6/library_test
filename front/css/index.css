@@ -70,7 +70,7 @@ header span {
     border-radius: 6px;
     font-size: 15px;
     cursor: pointer;
-    margin-bottom: 20px;
+    /*margin-bottom: 20px;*/
     transition: background 0.2s;
 }
 
@@ -79,11 +79,13 @@ header span {
 }
 
 /* Сетка постов */
+/*
 #posts-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
 }
+*/
 
 /* Карточка поста */
 .post-card {

@@ -184,10 +184,7 @@ form.addEventListener('submit', async (event) => {
 
         if (error.message.includes('Failed to fetch') ||
             error.message.includes('NetworkError')) {
-            errorMessage = '❌ Не удается подключиться к серверу.\n\n' +
-                'Проверьте:\n' +
-                '1. Запущен ли сервер (npm start)\n' +
-                `2. Адрес сервера: ${API_BASE_URL}`;
+            errorMessage = '❌ Не удается подключиться к серверу.'
         }
 
         showError(errorMessage);
