@@ -261,7 +261,13 @@ tr:hover {
 .action-buttons {
     display: flex;
     gap: 6px;
+    align-items: center;
     flex-wrap: wrap;
+}
+
+.action-buttons span {
+    color: #999;
+    font-size: 12px;
 }
 
 /* ---------- МОДАЛЬНЫЕ ОКНА ---------- */

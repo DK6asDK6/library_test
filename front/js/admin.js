@@ -3,60 +3,14 @@
 // Файл: admin.js
 // ============================================
 
-// --- КОНФИГУРАЦИЯ ---
+// API configuration
 const API_BASE_URL = 'http://localhost:3000/api';
 
-// --- ПОЛУЧАЕМ ДАННЫЕ ПОЛЬЗОВАТЕЛЯ ИЗ LOCALSTORAGE ---
+// Getting user data from local storage
 const userId = localStorage.getItem('userId');
 const userLogin = localStorage.getItem('userLogin');
 
-// --- ПРОВЕРКА ПРАВ АДМИНИСТРАТОРА ---
-async function checkAdminAccess() {
-    if (!userId) {
-        alert('⛔ Доступ запрещен. Требуется авторизация.');
-        window.location.href = 'index.html';
-        return false;
-    }
-
-    try {
-        console.log(`🔍 Проверка прав администратора для: ${userId}`);
-
-        const response = await fetch(`${API_BASE_URL}/users/access/${userId}`, {
-            headers: { 'user-id': userId }
-        });
-
-        console.log('📥 Статус ответа от /access:', response.status);
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log('📥 Ответ от /access:', data);
-
-            // 🔥 Используем поле message (сервер возвращает { message: access })
-            if (data.message === 2) {
-                console.log('✅ Доступ разрешен (администратор)');
-                return true;
-            } else {
-                console.log(`ℹ️ Уровень доступа: ${data.message} (администратор: 2)`);
-                alert(`⛔ Доступ запрещен. Ваш уровень доступа: ${data.message}`);
-                window.location.href = 'index.html';
-                return false;
-            }
-        } else {
-            console.warn(`⚠️ Не удалось проверить права. Статус: ${response.status}`);
-            alert('⛔ Ошибка проверки прав доступа.');
-            window.location.href = 'index.html';
-            return false;
-        }
-
-    } catch (error) {
-        console.error('❌ Ошибка проверки прав:', error);
-        alert('⛔ Ошибка проверки прав доступа.');
-        window.location.href = 'index.html';
-        return false;
-    }
-}
-
-// --- DOM ЭЛЕМЕНТЫ ---
+// DOM Elements
 const adminInfo = document.getElementById('admin-info');
 const backToPostsBtn = document.getElementById('back-to-posts');
 const logoutBtn = document.getElementById('logout-btn');
@@ -75,7 +29,7 @@ const resetNewPassword = document.getElementById('reset-new-password');
 const resetConfirmPassword = document.getElementById('reset-confirm-password');
 const cancelResetBtn = document.getElementById('cancel-reset-btn');
 
-// Модальные окна
+// Modal pages
 const editUserModal = document.getElementById('edit-user-modal');
 const editUserForm = document.getElementById('edit-user-form');
 const editUserLogin = document.getElementById('edit-user-login');
@@ -87,26 +41,14 @@ const confirmMessage = document.getElementById('confirm-message');
 const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 const cancelConfirmBtn = document.getElementById('cancel-confirm-btn');
 
-// --- ПЕРЕМЕННЫЕ ДЛЯ ХРАНЕНИЯ ДАННЫХ ---
+// Storage parameters
 let allUsers = [];
 let allPosts = [];
 let userToDelete = null;
 let userToEdit = null;
 let userToReset = null;
 
-// --- ИНИЦИАЛИЗАЦИЯ ---
-async function initAdmin() {
-    const isAdmin = await checkAdminAccess();
-    if (!isAdmin) return;
 
-    adminInfo.textContent = `👑 ${userLogin || userId} (Администратор)`;
-
-    // Загружаем данные
-    await loadAdminData();
-
-    // Навешиваем обработчики
-    setupEventListeners();
-}
 
 // --- ОБРАБОТЧИКИ НАВИГАЦИИ И СОБЫТИЙ ---
 function setupEventListeners() {
@@ -254,113 +196,6 @@ function setupEventListeners() {
     });
 }
 
-// --- ЗАГРУЗКА ВСЕХ ДАННЫХ ---
-async function loadAdminData() {
-    try {
-        await loadUsers();
-        await loadPosts();
-        updateStats();
-    } catch (error) {
-        console.error('❌ Ошибка загрузки данных:', error);
-    }
-}
-
-// --- ЗАГРУЗКА ПОЛЬЗОВАТЕЛЕЙ ---
-async function loadUsers() {
-    try {
-        console.log('👥 Загружаем список пользователей...');
-
-        // 🔥 ИСПРАВЛЕНО: GET /users/:aid с заголовком user-id
-        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-            headers: {
-                'user-id': userId
-            }
-        });
-
-        console.log('📥 Статус ответа /users:', response.status);
-
-        if (!response.ok) {
-            if (response.status === 403) {
-                usersTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="loading-text" style="color: #856404;">
-                            ⚠️ Доступ запрещен. Требуются права администратора.
-                        </td>
-                    </tr>
-                `;
-                return;
-            } else if (response.status === 401) {
-                usersTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="loading-text" style="color: #856404;">
-                            ⚠️ Не авторизован. Войдите заново.
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            throw new Error(`Ошибка: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('📥 Получены пользователи:', data);
-
-        if (Array.isArray(data)) {
-            allUsers = data;
-        } else if (data.users && Array.isArray(data.users)) {
-            allUsers = data.users;
-        } else {
-            allUsers = [];
-            console.warn('⚠️ Неожиданный формат ответа:', data);
-        }
-
-        renderUsers(allUsers);
-        updateStats();
-
-    } catch (error) {
-        console.error('❌ Ошибка загрузки пользователей:', error);
-        usersTableBody.innerHTML = `
-            <tr>
-                <td colspan="4" class="loading-text" style="color: #dc3545;">
-                    ❌ Ошибка загрузки: ${error.message}
-                </td>
-            </tr>
-        `;
-    }
-}
-
-// --- ЗАГРУЗКА ПОСТОВ ---
-async function loadPosts() {
-    try {
-        console.log('📝 Загружаем список постов...');
-
-        const response = await fetch(`${API_BASE_URL}/posts/${userId}`, {
-            headers: {
-                'user-id': userId
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Ошибка: ${response.status}`);
-        }
-
-        const data = await response.json();
-        allPosts = Array.isArray(data) ? data : (data.posts || data.data || []);
-        console.log('✅ Загружены посты:', allPosts.length);
-        renderPosts(allPosts);
-
-    } catch (error) {
-        console.error('❌ Ошибка загрузки постов:', error);
-        postsTableBody.innerHTML = `
-            <tr>
-                <td colspan="5" class="loading-text" style="color: #dc3545;">
-                    ❌ Ошибка загрузки: ${error.message}
-                </td>
-            </tr>
-        `;
-    }
-}
-
 // --- ОБНОВЛЕНИЕ СТАТИСТИКИ ---
 function updateStats() {
     totalUsersEl.textContent = allUsers.length;
@@ -414,7 +249,7 @@ function renderUsers(users) {
                                 🗑️
                             </button>
                         ` : `
-                            <span style="color:#999; font-size:12px;">(Это вы)</span>
+                            <span>(Это вы)</span>
                         `}
                     </div>
                 </td>
@@ -704,6 +539,185 @@ async function deletePost(postId) {
         alert(`❌ Ошибка: ${error.message}`);
     }
 }
+
+// --- ЗАГРУЗКА ПОЛЬЗОВАТЕЛЕЙ ---
+async function loadUsers() {
+    try {
+        console.log('👥 Загружаем список пользователей...');
+
+        // 🔥 ИСПРАВЛЕНО: GET /users/:aid с заголовком user-id
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+            headers: {
+                'user-id': userId
+            }
+        });
+
+        console.log('📥 Статус ответа /users:', response.status);
+
+        if (!response.ok) {
+            if (response.status === 403) {
+                usersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="loading-text" style="color: #856404;">
+                            ⚠️ Доступ запрещен. Требуются права администратора.
+                        </td>
+                    </tr>
+                `;
+                return;
+            } else if (response.status === 401) {
+                usersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="loading-text" style="color: #856404;">
+                            ⚠️ Не авторизован. Войдите заново.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            throw new Error(`Ошибка: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('📥 Получены пользователи:', data);
+
+        if (Array.isArray(data)) {
+            allUsers = data;
+        } else if (data.users && Array.isArray(data.users)) {
+            allUsers = data.users;
+        } else {
+            allUsers = [];
+            console.warn('⚠️ Неожиданный формат ответа:', data);
+        }
+
+        renderUsers(allUsers);
+        updateStats();
+
+    } catch (error) {
+        console.error('❌ Ошибка загрузки пользователей:', error);
+        usersTableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="loading-text" style="color: #dc3545;">
+                    ❌ Ошибка загрузки: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// --- ЗАГРУЗКА ПОСТОВ ---
+async function loadPosts() {
+    try {
+        console.log('📝 Загружаем список постов...');
+
+        const response = await fetch(`${API_BASE_URL}/posts/${userId}`, {
+            headers: {
+                'user-id': userId
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Ошибка: ${response.status}`);
+        }
+
+        const data = await response.json();
+        allPosts = Array.isArray(data) ? data : (data.posts || data.data || []);
+        console.log('✅ Загружены посты:', allPosts.length);
+        renderPosts(allPosts);
+
+    } catch (error) {
+        console.error('❌ Ошибка загрузки постов:', error);
+        postsTableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="loading-text" style="color: #dc3545;">
+                    ❌ Ошибка загрузки: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+/*
+ * Load data needed for admin function
+ * PARAMETERS: None.
+ * RETURNS: None.
+ */
+async function loadAdminData() {
+    try {
+        await loadUsers();
+        await loadPosts();
+        updateStats();
+    } catch (error) {
+        console.error('❌ Ошибка загрузки данных:', error);
+    }
+}
+
+/*
+ * Check admin access function
+ * PARAMETERS: None.
+ * RETURNS: TRUE, if user is admin, FALSE otherwise
+ */
+async function checkAdminAccess() {
+    if (!userId) {
+        alert('⛔ Доступ запрещен. Требуется авторизация.');
+        window.location.href = 'index.html';
+        return false;
+    }
+
+    try {
+        console.log(`🔍 Проверка прав администратора для: ${userId}`);
+
+        const response = await fetch(`${API_BASE_URL}/users/access/${userId}`, {
+            headers: { 'user-id': userId }
+        });
+
+        console.log('📥 Статус ответа от /access:', response.status);
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log('📥 Ответ от /access:', data);
+
+            // 🔥 Используем поле message (сервер возвращает { message: access })
+            if (data.message === 2) {
+                console.log('✅ Доступ разрешен (администратор)');
+                return true;
+            } else {
+                console.log(`ℹ️ Уровень доступа: ${data.message} (администратор: 2)`);
+                alert(`⛔ Доступ запрещен. Ваш уровень доступа: ${data.message}`);
+                window.location.href = 'index.html';
+                return false;
+            }
+        } else {
+            console.warn(`⚠️ Не удалось проверить права. Статус: ${response.status}`);
+            alert('⛔ Ошибка проверки прав доступа.');
+            window.location.href = 'index.html';
+            return false;
+        }
+
+    } catch (error) {
+        console.error('❌ Ошибка проверки прав:', error);
+        alert('⛔ Ошибка проверки прав доступа.');
+        window.location.href = 'index.html';
+        return false;
+    }
+} /* End of 'checkAdminAccess' function */
+
+/*
+ * Initialization function
+ * PARAMETERS: None.
+ * RETURNS: None.
+ */
+async function initAdmin() {
+    const isAdmin = await checkAdminAccess();
+    if (!isAdmin) return;
+
+    adminInfo.textContent = `👑 ${userLogin || userId} (Администратор)`;
+
+    // Загружаем данные
+    await loadAdminData();
+
+    // Навешиваем обработчики
+    setupEventListeners();
+} /* End of 'initAdmin' function */
 
 // --- ЗАПУСК ---
 initAdmin();
