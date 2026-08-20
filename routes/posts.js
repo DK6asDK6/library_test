@@ -7,9 +7,19 @@ const upload = require('../middleware/upload');
 const { validatePost, validationHandler } = require('../middleware/validation');
 const { getCorrectionVariants } = require('../middleware/spellcheck');
 
-// ============================================
-// POST /:uid - Создание поста
-// ============================================
+/*
+ * Post creation (without files) request (access 1 or more required)
+ * Route: api/posts/{uid - user ID (or 0 if guest)}
+ * Request body:
+ *  - post: structure with following fields:
+ *      - title: string 1-200 symbols in length
+ *      - text (optional): post's text, default: null string
+ *      - link (optional): link to archive page (if exists), default: null string
+ *      - access (optional): access level to see this post, default: 0
+ *      - forceApprove (optional): force approve post (admins only)
+ * Response body:
+ *  - post - whole post structure
+ */
 router.post('/:uid', upload.array('files', 20), validatePost, validationHandler, async (req, res, next) => {
     try {
         let admin = null;
@@ -57,9 +67,14 @@ router.post('/:uid', upload.array('files', 20), validatePost, validationHandler,
     }
 });
 
-// ============================================
-// GET /:uid - Получение всех постов
-// ============================================
+/* Get all posts (if not admin, approved only)
+ * Route: api/posts/{uid - user ID (or 0 if guest)}
+ * Request body:
+ *  - filters (optional) - JSON with additional filters
+ *      - title - title substring to search
+ * Response body:
+ *  - posts: array of posts info (_id, title, sender_id, isApproved, sender_name)
+ */
 router.get('/:uid', async (req, res, next) => {
     try {
         const uid = req.params.uid;
@@ -126,9 +141,12 @@ router.get('/:uid', async (req, res, next) => {
     }
 });
 
-// ============================================
-// GET /one/:id/:uid - Получение одного поста
-// ============================================
+/*
+ * Get one post request
+ * Route: api/posts/one/{id - post ID}/{uid - user ID (or 0 if guest)}
+ * Request body: None
+ * Response body: full post
+ */
 router.get('/one/:id/:uid', async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -156,9 +174,15 @@ router.get('/one/:id/:uid', async (req, res, next) => {
     }
 });
 
-// ============================================
-// POST /appr/:uid - Одобрение/отзыв поста
-// ============================================
+/*
+ * Approve/Revoke post request
+ * Route: api/posts/appr/{uid - user ID (or 0 if guest)}
+ * Request body:
+ *  - postId - post ID
+ *  - isApproved - true if approved, false id revoked
+ * Response body:
+ *  - message
+ */
 router.post('/appr/:uid', async (req, res, next) => {
     try {
         const uid = req.params.uid;
@@ -192,9 +216,13 @@ router.post('/appr/:uid', async (req, res, next) => {
     }
 });
 
-// ============================================
-// DELETE /:uid/:id - Удаление поста (только админ)
-// ============================================
+/*
+ * Post remove request
+ * Route: api/posts/{id - post ID}/{uid - user ID (or 0 if guest)}
+ * Request body: none
+ * Response body:
+ *  - message
+ */
 router.delete('/:uid/:id', async (req, res) => {
     try {
         const { uid, id } = req.params;
