@@ -246,8 +246,8 @@ function displayPosts(posts) {
         html += `
             <div class="post-card">
                 <h3>${escapeHtml(post.title) || 'Без заголовка'}</h3>
-<!--                <p>${escapeHtml(post.text) || 'Нет содержания'}</p>-->
-<!--                ${post.link ? `<a href="${escapeHtml(post.link)}" target="_blank">🔗 Ссылка</a>` : ''} -->
+                <p>${escapeHtml(post.text) || 'Нет содержания'}</p>
+                ${post.link ? `<a href="${escapeHtml(post.link)}" target="_blank">🔗 Ссылка</a>` : ''} 
                 <div class="post-meta">
                     <span>🆔 ${post._id}</span>
                     <span>👤 ${escapeHtml(authorLogin)}</span>
