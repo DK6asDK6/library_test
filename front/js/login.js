@@ -1,32 +1,32 @@
 // ============================================
-// СТРАНИЦА ВХОДА / РЕГИСТРАЦИИ
-// Файл: login.js
+// LOGIN / REGISTRATION PAGE
+// File: login.js
 // ============================================
 
-// === КОНФИГУРАЦИЯ API ===
+// === API CONFIGURATION ===
 const API_CONFIG = {
-    // Порт бекенда (по умолчанию 3000)
+    // Backend port (default 3000)
     port: 3000,
-    // Путь к API
+    // API path
     path: '/api'
 };
 
 const API_BASE_URL = (() => {
     const { hostname, protocol } = window.location;
 
-    // Если мы на localhost
+    // If we are on localhost
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return `${protocol}//${hostname}:${API_CONFIG.port}${API_CONFIG.path}`;
     }
 
-    // Если мы на production
-    // Можно использовать относительный путь или полный URL
+    // If we are on production
+    // You can use relative path or full URL
     return API_CONFIG.path;
 })();
 
 console.log('🔗 API_BASE_URL:', API_BASE_URL);
 
-// --- DOM ЭЛЕМЕНТЫ ---
+// --- DOM ELEMENTS ---
 const form = document.getElementById('auth-form');
 const loginInput = document.getElementById('login');
 const passwordInput = document.getElementById('password');
@@ -38,7 +38,7 @@ const errorMessageDiv = document.getElementById('error-message');
 
 let isLoginMode = true;
 
-// --- ФУНКЦИИ ---
+// --- FUNCTIONS ---
 function setMode(mode) {
     isLoginMode = mode;
     if (mode) {
@@ -66,12 +66,12 @@ function setLoading(isLoading) {
     submitBtn.textContent = isLoading ? '⏳ Отправка...' : (isLoginMode ? 'Войти' : 'Зарегистрироваться');
 }
 
-// --- ОБРАБОТЧИКИ ---
+// --- EVENT HANDLERS ---
 toggleAction.addEventListener('click', () => {
     setMode(!isLoginMode);
 });
 
-// --- ОСНОВНАЯ ФУНКЦИЯ ВХОДА/РЕГИСТРАЦИИ ---
+// --- MAIN LOGIN/REGISTRATION FUNCTION ---
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
     errorMessageDiv.style.display = 'none';
@@ -119,18 +119,18 @@ form.addEventListener('submit', async (event) => {
 
         console.log('📥 Полный ответ сервера:', JSON.stringify(data, null, 2));
 
-        // --- ОБРАБОТКА ОШИБОК ---
+        // --- ERROR HANDLING ---
         if (!response.ok) {
             let errorMsg = data.message || data.error || 'Произошла ошибка.';
             throw new Error(errorMsg);
         }
 
-        // --- УСПЕШНЫЙ ВХОД ---
+        // --- SUCCESSFUL LOGIN ---
         if (isLoginMode) {
             let userId = null;
             let userLogin = null;
 
-            // Извлекаем ID и логин из ответа
+            // Extract ID and login from response
             if (data.user && data.user._id) {
                 userId = data.user._id;
                 userLogin = data.user.login;
@@ -143,12 +143,12 @@ form.addEventListener('submit', async (event) => {
             }
 
             if (userId) {
-                // 🔥 Сохраняем ТОЛЬКО ID и логин
-                // Уровень доступа НЕ СОХРАНЯЕМ!
+                // Store ONLY ID and login
+                // Access level is NOT stored
                 localStorage.setItem('userId', userId);
                 localStorage.setItem('userLogin', userLogin || login);
 
-                // Удаляем старый access если был (для безопасности)
+                // Remove old access if present (for security)
                 localStorage.removeItem('userAccess');
 
                 console.log('✅ Успешный вход:', { userId, userLogin });
@@ -160,11 +160,11 @@ form.addEventListener('submit', async (event) => {
                 throw new Error('Не удалось получить ID пользователя.');
             }
         }
-        // --- УСПЕШНАЯ РЕГИСТРАЦИЯ ---
+        // --- SUCCESSFUL REGISTRATION ---
         else {
             if (data.message === 'Success' && data.user && data.user._id && data.user.login) {
-                // 🔥 При регистрации сохраняем только ID и логин
-                // Access не храним - он запросится при входе
+                // Store only ID and login on registration
+                // Access is not stored - it will be requested on login
                 localStorage.setItem('userId', data.user._id);
                 localStorage.setItem('userLogin', data.user.login);
                 localStorage.removeItem('userAccess');
@@ -184,7 +184,7 @@ form.addEventListener('submit', async (event) => {
 
         if (error.message.includes('Failed to fetch') ||
             error.message.includes('NetworkError')) {
-            errorMessage = '❌ Не удается подключиться к серверу.'
+            errorMessage = '❌ Не удается подключиться к серверу.';
         }
 
         showError(errorMessage);
@@ -193,7 +193,7 @@ form.addEventListener('submit', async (event) => {
     }
 });
 
-// --- ПРОВЕРКА: если пользователь уже авторизован ---
+// --- CHECK: if user is already authenticated ---
 if (localStorage.getItem('userId')) {
     window.location.href = 'index.html';
 }

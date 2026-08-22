@@ -1,6 +1,9 @@
-/* login.css */
+/* ============================================
+   LOGIN / REGISTRATION PAGE STYLES
+   File: login.css
+   ============================================ */
 
-/* Общие стили */
+/* ---------- GLOBAL RESET ---------- */
 * {
     margin: 0;
     padding: 0;
@@ -16,7 +19,7 @@ body {
     background: #f0f2f5;
 }
 
-/* Карточка формы */
+/* ---------- FORM CARD ---------- */
 form {
     background: white;
     padding: 40px;
@@ -32,7 +35,7 @@ h2 {
     color: #1a1a1a;
 }
 
-/* Группа полей */
+/* ---------- FORM FIELDS ---------- */
 div {
     margin-bottom: 16px;
 }
@@ -59,7 +62,7 @@ input:focus {
     border-color: #4A90D9;
 }
 
-/* Кнопка */
+/* ---------- SUBMIT BUTTON ---------- */
 button {
     width: 100%;
     padding: 12px;
@@ -82,7 +85,7 @@ button:disabled {
     cursor: not-allowed;
 }
 
-/* Сообщение об ошибке */
+/* ---------- ERROR MESSAGE ---------- */
 #error-message {
     background: #fee;
     color: #c00;
@@ -93,7 +96,7 @@ button:disabled {
     display: none;
 }
 
-/* Ссылка переключения режима */
+/* ---------- MODE TOGGLE LINK ---------- */
 p {
     text-align: center;
     margin-top: 16px;
@@ -112,20 +115,21 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Адаптивность */
+/* ---------- RESPONSIVENESS ---------- */
 @media (max-width: 400px) {
     form {
         padding: 24px;
     }
 }
 
-/* Дополнительные стили для login.html */
+/* ---------- CONTAINER ---------- */
 .container {
     width: 100%;
     max-width: 400px;
     margin: 0 auto;
 }
 
+/* ---------- ERROR MESSAGE CONTAINER ---------- */
 .error-message {
     background: #f8d7da;
     color: #721c24;

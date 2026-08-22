@@ -1,40 +1,40 @@
 // ============================================
-// ЛОГИКА ГЛАВНОЙ СТРАНИЦЫ
-// Файл: index.js
+// MAIN PAGE LOGIC
+// File: index.js
 // ============================================
 
-// === КОНФИГУРАЦИЯ API ===
+// === API CONFIGURATION ===
 const API_CONFIG = {
-    // Порт бекенда (по умолчанию 3000)
+    // Backend port (default: 3000)
     port: 3000,
-    // Путь к API
+    // API path
     path: '/api'
 };
 
 const API_BASE_URL = (() => {
     const { hostname, protocol } = window.location;
 
-    // Если мы на localhost
+    // If running on localhost
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return `${protocol}//${hostname}:${API_CONFIG.port}${API_CONFIG.path}`;
     }
 
-    // Если мы на production
+    // If running in production
     return API_CONFIG.path;
 })();
 
 console.log('🔗 API_BASE_URL:', API_BASE_URL);
 
-// 🔥 ТОЛЬКО ОДНО ОБЪЯВЛЕНИЕ - В НАЧАЛЕ ФАЙЛА
+// Single declaration at the beginning of the file
 const userId = localStorage.getItem('userId');
 const userLogin = localStorage.getItem('userLogin');
 
-// 🔥 ПЕРЕМЕННАЯ ДЛЯ ХРАНЕНИЯ ACCESS (НЕ В LOCALSTORAGE!)
+// Variable for storing access (NOT in localStorage!)
 let currentUserAccess = 0;
 
-console.log('👤 Данные пользователя:', { userId, userLogin });
+console.log('👤 User data:', { userId, userLogin });
 
-// --- DOM ЭЛЕМЕНТЫ ---
+// --- DOM ELEMENTS ---
 const postsContainer = document.getElementById('posts-container');
 const guestControls = document.getElementById('guest-controls');
 const userControls = document.getElementById('user-controls');
@@ -50,7 +50,11 @@ const modal = document.getElementById('create-post-modal');
 const cancelCreateBtn = document.getElementById('cancel-create-btn');
 const createPostForm = document.getElementById('create-post-form');
 
-// --- ФУНКЦИЯ ПОЛУЧЕНИЯ ACCESS С СЕРВЕРА ---
+/**
+ * Fetch user access level from server
+ * PARAMETERS: None
+ * RETURNS: numeric access level (0, 1, or 2)
+ */
 async function fetchUserAccess() {
     if (!userId) {
         console.log('👤 Гость (access: 0)');
@@ -70,20 +74,20 @@ async function fetchUserAccess() {
             const data = await response.json();
             console.log('📥 Ответ от /access:', data);
 
-            // 🔥 ИЗВЛЕКАЕМ ЧИСЛО ИЗ ПОЛЯ message
+            // Extract numeric value from message field
             if (data.message !== undefined && typeof data.message === 'number') {
                 const accessLevel = data.message;
                 console.log(`✅ Уровень доступа получен: ${accessLevel}`);
                 return accessLevel;
             }
 
-            // Если вдруг пришел accLevel (старый формат)
+            // Old format fallback (accLevel)
             if (data.accLevel !== undefined) {
                 console.log(`✅ Уровень доступа (accLevel): ${data.accLevel}`);
                 return data.accLevel;
             }
 
-            // Если вдруг пришло просто число
+            // Direct number fallback
             if (typeof data === 'number') {
                 console.log(`✅ Уровень доступа (число): ${data}`);
                 return data;
@@ -102,7 +106,11 @@ async function fetchUserAccess() {
     }
 }
 
-// --- ОБНОВЛЕНИЕ ВРЕМЕНИ ---
+/**
+ * Update last update timestamp
+ * PARAMETERS: None
+ * RETURNS: None
+ */
 function updateLastUpdateTime() {
     const now = new Date();
     const timeString = now.toLocaleTimeString('ru-RU', {
@@ -113,7 +121,11 @@ function updateLastUpdateTime() {
     lastUpdateEl.textContent = `Последнее обновление: ${timeString}`;
 }
 
-// --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
+/**
+ * Update user interface based on access level
+ * PARAMETERS: None
+ * RETURNS: None
+ */
 async function updateUI() {
     currentUserAccess = await fetchUserAccess();
 
@@ -141,7 +153,7 @@ async function updateUI() {
     }
 }
 
-// --- КНОПКИ ---
+// --- BUTTON HANDLERS ---
 loginBtn.addEventListener('click', () => window.location.href = 'login.html');
 
 logoutBtn.addEventListener('click', () => {
@@ -171,7 +183,11 @@ refreshPostsBtn.addEventListener('click', async () => {
     }
 });
 
-// --- ЗАГРУЗКА ПОСТОВ ---
+/**
+ * Load posts from server
+ * PARAMETERS: None
+ * RETURNS: None
+ */
 async function loadPosts() {
     postsContainer.innerHTML = '<div class="loading">Загрузка постов...</div>';
 
@@ -180,18 +196,18 @@ async function loadPosts() {
         const headers = {};
 
         if (userId) {
-            // 🔥 Авторизованный пользователь — передаем его ID
+            // Authenticated user — pass their ID
             const filters = {};
             const filtersQuery = new URLSearchParams({ filters: JSON.stringify(filters) }).toString();
             url = `${API_BASE_URL}/posts/${userId}?${filtersQuery}`;
             headers['user-id'] = userId;
             headers['user-access'] = currentUserAccess;
         } else {
-            // 🔥 ИСПРАВЛЕНО: Гость — передаем "0" вместо "guest"
+            // Guest — pass "0" instead of "guest"
             const filters = {};
             const filtersQuery = new URLSearchParams({ filters: JSON.stringify(filters) }).toString();
             url = `${API_BASE_URL}/posts/0?${filtersQuery}`;
-            // Для гостя не отправляем user-id
+            // No user-id header for guests
         }
 
         console.log('📤 Загружаем посты:', url);
@@ -224,7 +240,12 @@ async function loadPosts() {
     }
 }
 
-// --- ОТОБРАЖЕНИЕ ПОСТОВ ---
+/**
+ * Display posts in the grid
+ * PARAMETERS:
+ *  - posts: array of post objects
+ * RETURNS: None
+ */
 function displayPosts(posts) {
     if (!posts || posts.length === 0) {
         postsContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#888;">📭 Пока нет ни одного поста</div>';
@@ -237,7 +258,7 @@ function displayPosts(posts) {
         const statusClass = isApproved ? 'status-approved' : 'status-pending';
         const statusText = isApproved ? '✅ Одобрен' : '⏳ На модерации';
 
-        // 🔥 ПРОБУЕМ РАЗНЫЕ ИСТОЧНИКИ ИМЕНИ АВТОРА
+        // Try different sources for author name
         const authorLogin = post.sender_name ||
             post.sender_id?.login ||
             post.authorLogin ||
@@ -283,7 +304,12 @@ function displayPosts(posts) {
     }
 }
 
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+/**
+ * Escape HTML special characters
+ * PARAMETERS:
+ *  - text: string to escape
+ * RETURNS: escaped string
+ */
 function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -291,7 +317,12 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// --- АДМИН: ОДОБРЕНИЕ/ОТЗЫВ ---
+/**
+ * Admin: Approve/revoke post
+ * PARAMETERS:
+ *  - event: click event from button
+ * RETURNS: None
+ */
 async function handleToggleApprove(event) {
     const btn = event.currentTarget;
     const postId = btn.dataset.postId;
@@ -329,7 +360,12 @@ async function handleToggleApprove(event) {
     }
 }
 
-// --- АДМИН: УДАЛЕНИЕ ---
+/**
+ * Admin: Delete post
+ * PARAMETERS:
+ *  - event: click event from button
+ * RETURNS: None
+ */
 async function handleDeletePost(event) {
     const btn = event.currentTarget;
     const postId = btn.dataset.postId;
@@ -365,11 +401,12 @@ async function handleDeletePost(event) {
     }
 }
 
-// --- СОЗДАНИЕ ПОСТА (С ПЕРЕДАЧЕЙ ИМЕНИ АВТОРА) ---
+// --- CREATE POST (WITH AUTHOR NAME) ---
 createPostBtn.addEventListener('click', () => {
     modal.style.display = 'flex';
     document.getElementById('post-title').value = '';
     document.getElementById('post-content').value = '';
+    document.getElementById('post-link').value = '';
 });
 
 cancelCreateBtn.addEventListener('click', () => modal.style.display = 'none');
@@ -377,19 +414,11 @@ modal.addEventListener('click', (event) => {
     if (event.target === modal) modal.style.display = 'none';
 });
 
-// --- СОЗДАНИЕ ПОСТА ---
-createPostBtn.addEventListener('click', () => {
-    modal.style.display = 'flex';
-    document.getElementById('post-title').value = '';
-    document.getElementById('post-content').value = '';
-    document.getElementById('post-link').value = ''; // ← Очищаем поле ссылки
-});
-
-cancelCreateBtn.addEventListener('click', () => modal.style.display = 'none');
-modal.addEventListener('click', (event) => {
-    if (event.target === modal) modal.style.display = 'none';
-});
-
+/**
+ * Submit new post
+ * PARAMETERS: None (uses form data)
+ * RETURNS: None
+ */
 createPostForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
@@ -417,7 +446,7 @@ createPostForm.addEventListener('submit', async (event) => {
         const url = `${API_BASE_URL}/posts/${userId}`;
         console.log('📤 URL запроса:', url);
 
-        // 🔥 БАЗОВАЯ СТРУКТУРА ПОСТА (без ссылки)
+        // Base post structure (without link)
         const postData = {
             sender_id: userId,
             sender_name: userLogin || 'Неизвестен',
@@ -426,24 +455,24 @@ createPostForm.addEventListener('submit', async (event) => {
             access: 0
         };
 
-        // 🔥 ДОБАВЛЯЕМ ССЫЛКУ, ТОЛЬКО ЕСЛИ ОНА НЕ ПУСТАЯ
+        // Add link only if not empty
         if (link && link.trim() !== '') {
             postData.link = link.trim();
         }
 
-        // 🔥 ПРАВИЛЬНАЯ СТРУКТУРА ДЛЯ МОДЕЛИ POST
+        // Correct structure for Post model
         const requestData = {
-            // Данные для валидации (на случай, если сервер проверяет корневые поля)
+            // Data for validation (in case server checks root fields)
             sender_id: userId,
             sender_name: userLogin || 'Неизвестен',
             title: title,
             text: content,
             access: 0,
-            // Данные для создания поста
+            // Data for post creation
             post: postData
         };
 
-        // 🔥 ДОБАВЛЯЕМ ССЫЛКУ В КОРНЕВЫЕ ПОЛЯ, ЕСЛИ ОНА ЕСТЬ
+        // Add link to root fields if present
         if (link && link.trim() !== '') {
             requestData.link = link.trim();
         }
@@ -494,7 +523,7 @@ createPostForm.addEventListener('submit', async (event) => {
     }
 });
 
-// --- ЗАПУСК ---
+// --- STARTUP ---
 async function init() {
     await updateUI();
     await loadPosts();

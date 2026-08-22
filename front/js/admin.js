@@ -1,6 +1,5 @@
 // ============================================
-// ПАНЕЛЬ АДМИНИСТРАТОРА
-// Файл: admin.js
+// Admin panel
 // ============================================
 
 // API configuration
@@ -50,21 +49,21 @@ let userToReset = null;
 
 
 
-// --- ОБРАБОТЧИКИ НАВИГАЦИИ И СОБЫТИЙ ---
+// --- EVENT LISTENERS SETUP ---
 function setupEventListeners() {
-    // Кнопка "На главную"
+    // Back to main page button
     backToPostsBtn.addEventListener('click', () => {
         window.location.href = 'index.html';
     });
 
-    // Кнопка "Выйти"
+    // Logout button
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('userId');
         localStorage.removeItem('userLogin');
         window.location.href = 'login.html';
     });
 
-    // Кнопка "Обновить посты"
+    // Refresh posts button
     refreshPostsBtn.addEventListener('click', async () => {
         refreshPostsBtn.disabled = true;
         refreshPostsBtn.textContent = '⏳ Загрузка...';
@@ -73,7 +72,7 @@ function setupEventListeners() {
         refreshPostsBtn.textContent = '🔄 Обновить';
     });
 
-    // Поиск пользователей
+    // User search
     userSearch.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase().trim();
         if (!query) {
@@ -86,29 +85,29 @@ function setupEventListeners() {
         renderUsers(filtered);
     });
 
-    // Модальное окно редактирования - закрытие
+    // Edit modal - close on background click
     editUserModal.addEventListener('click', (e) => {
         if (e.target === editUserModal) editUserModal.style.display = 'none';
     });
 
-    // Модальное окно подтверждения - закрытие
+    // Confirm modal - close on background click
     confirmModal.addEventListener('click', (e) => {
         if (e.target === confirmModal) confirmModal.style.display = 'none';
     });
 
-    // Кнопка "Отмена" в модалке редактирования
+    // Edit modal - cancel button
     cancelEditBtn.addEventListener('click', () => {
         editUserModal.style.display = 'none';
         userToEdit = null;
     });
 
-    // Кнопка "Отмена" в модалке подтверждения
+    // Confirm modal - cancel button
     cancelConfirmBtn.addEventListener('click', () => {
         confirmModal.style.display = 'none';
         userToDelete = null;
     });
 
-    // --- СОХРАНЕНИЕ ПРАВ ПОЛЬЗОВАТЕЛЯ ---
+    // --- USER ACCESS LEVEL UPDATE ---
     editUserForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -118,12 +117,12 @@ function setupEventListeners() {
         }
 
         const newAccess = parseInt(editUserAccess.value);
-        const userLogin = userToEdit.login; // ← Используем login, а не id
+        const userLogin = userToEdit.login;
 
         console.log(`✏️ Меняем права пользователя ${userLogin} на ${newAccess}`);
 
         try {
-            // 🔥 ИСПРАВЛЕНО: правильный URL с ID администратора
+            // Correct URL with admin ID
             const response = await fetch(`${API_BASE_URL}/users/access/${userId}`, {
                 method: 'POST',
                 headers: {
@@ -131,8 +130,8 @@ function setupEventListeners() {
                     'user-id': userId
                 },
                 body: JSON.stringify({
-                    us_login: userLogin,  // ← поле из вашего бекенда
-                    s_acc: newAccess       // ← поле из вашего бекенда
+                    us_login: userLogin,
+                    s_acc: newAccess
                 })
             });
 
@@ -150,7 +149,7 @@ function setupEventListeners() {
             editUserModal.style.display = 'none';
             userToEdit = null;
 
-            // Обновляем данные
+            // Reload data
             await loadAdminData();
 
         } catch (error) {
@@ -159,7 +158,7 @@ function setupEventListeners() {
         }
     });
 
-    // Подтверждение удаления пользователя
+    // User deletion confirmation
     confirmDeleteBtn.addEventListener('click', async () => {
         if (!userToDelete) return;
 
@@ -184,7 +183,7 @@ function setupEventListeners() {
             confirmModal.style.display = 'none';
             userToDelete = null;
 
-            // Обновляем данные
+            // Reload data
             await loadAdminData();
 
         } catch (error) {
@@ -196,7 +195,7 @@ function setupEventListeners() {
     });
 }
 
-// --- ОБНОВЛЕНИЕ СТАТИСТИКИ ---
+// --- STATISTICS UPDATE ---
 function updateStats() {
     totalUsersEl.textContent = allUsers.length;
     totalPostsEl.textContent = allPosts.length;
@@ -209,7 +208,7 @@ function updateStats() {
     approvedPostsEl.textContent = approved;
 }
 
-// --- ОТОБРАЖЕНИЕ ПОЛЬЗОВАТЕЛЕЙ В ТАБЛИЦЕ ---
+// --- USERS TABLE RENDER ---
 function renderUsers(users) {
     if (!users || users.length === 0) {
         usersTableBody.innerHTML = `
@@ -237,7 +236,7 @@ function renderUsers(users) {
                                 data-userid="${user._id || user.id}">
                             ✏️
                         </button>
-                        <!-- 🔥 КНОПКА СМЕНЫ ПАРОЛЯ -->
+                        <!-- Password reset button -->
                         <button class="btn btn-warning btn-sm reset-password-btn" 
                                 data-login="${escapeHtml(user.login)}">
                             🔑
@@ -259,7 +258,7 @@ function renderUsers(users) {
 
     usersTableBody.innerHTML = html;
 
-    // Обработчики для кнопок редактирования
+    // Edit button handlers
     document.querySelectorAll('.edit-user-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const userId = btn.dataset.userid;
@@ -267,7 +266,7 @@ function renderUsers(users) {
         });
     });
 
-    // 🔥 ОБРАБОТЧИКИ ДЛЯ КНОПОК СМЕНЫ ПАРОЛЯ
+    // Password reset button handlers
     document.querySelectorAll('.reset-password-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const login = btn.dataset.login;
@@ -275,7 +274,7 @@ function renderUsers(users) {
         });
     });
 
-    // Обработчики для кнопок удаления
+    // Delete button handlers
     document.querySelectorAll('.delete-user-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const userId = btn.dataset.userid;
@@ -285,7 +284,7 @@ function renderUsers(users) {
     });
 }
 
-// --- ОТОБРАЖЕНИЕ ПОСТОВ В ТАБЛИЦЕ ---
+// --- POSTS TABLE RENDER ---
 function renderPosts(posts) {
     if (!posts || posts.length === 0) {
         postsTableBody.innerHTML = `
@@ -296,7 +295,7 @@ function renderPosts(posts) {
         return;
     }
 
-    // Показываем последние 20 постов
+    // Show last 20 posts
     const recentPosts = posts.slice(-20).reverse();
 
     let html = '';
@@ -340,7 +339,7 @@ function renderPosts(posts) {
 
     postsTableBody.innerHTML = html;
 
-    // Обработчики для кнопок одобрения/отзыва
+    // Toggle approval button handlers
     document.querySelectorAll('.toggle-post-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             const postId = btn.dataset.postid;
@@ -348,7 +347,7 @@ function renderPosts(posts) {
         });
     });
 
-    // Обработчики для кнопок удаления постов
+    // Delete post button handlers
     document.querySelectorAll('.delete-post-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             const postId = btn.dataset.postid;
@@ -360,7 +359,7 @@ function renderPosts(posts) {
     });
 }
 
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+// --- HELPER FUNCTIONS ---
 function getRoleText(access) {
     if (access === 2) return 'Администратор';
     if (access === 1) return 'Модератор';
@@ -380,7 +379,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// --- ОТКРЫТИЕ МОДАЛКИ СМЕНЫ ПАРОЛЯ ---
+// --- PASSWORD RESET MODAL OPEN ---
 function openResetPasswordModal(userLogin) {
     userToReset = userLogin;
     resetUserLogin.value = userLogin;
@@ -389,7 +388,7 @@ function openResetPasswordModal(userLogin) {
     resetPasswordModal.style.display = 'flex';
 }
 
-// --- ЗАКРЫТИЕ МОДАЛКИ СМЕНЫ ПАРОЛЯ ---
+// --- PASSWORD RESET MODAL CLOSE ---
 cancelResetBtn.addEventListener('click', () => {
     resetPasswordModal.style.display = 'none';
     userToReset = null;
@@ -402,7 +401,7 @@ resetPasswordModal.addEventListener('click', (e) => {
     }
 });
 
-// --- СМЕНА ПАРОЛЯ ---
+// --- PASSWORD RESET ---
 resetPasswordForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -430,7 +429,7 @@ resetPasswordForm.addEventListener('submit', async (e) => {
     submitBtn.textContent = '⏳ Отправка...';
 
     try {
-        // 🔥 ИСПОЛЬЗУЕМ СУЩЕСТВУЮЩИЙ ЭНДПОИНТ
+        // Using existing endpoint
         const response = await fetch(`${API_BASE_URL}/users/reset_admin/${userId}`, {
             method: 'POST',
             headers: {
@@ -438,8 +437,8 @@ resetPasswordForm.addEventListener('submit', async (e) => {
                 'user-id': userId
             },
             body: JSON.stringify({
-                us_login: userToReset,  // ← поле из вашего бекенда
-                new_pwd: newPassword     // ← поле из вашего бекенда
+                us_login: userToReset,
+                new_pwd: newPassword
             })
         });
 
@@ -465,7 +464,7 @@ resetPasswordForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- ОТКРЫТИЕ МОДАЛКИ РЕДАКТИРОВАНИЯ ---
+// --- EDIT MODAL OPEN ---
 function openEditUserModal(userId) {
     const user = allUsers.find(u => (u._id || u.id) === userId);
     if (!user) {
@@ -479,14 +478,14 @@ function openEditUserModal(userId) {
     editUserModal.style.display = 'flex';
 }
 
-// --- ОТКРЫТИЕ МОДАЛКИ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ ---
+// --- DELETE CONFIRM MODAL OPEN ---
 function openDeleteConfirm(userId, login) {
     userToDelete = userId;
     confirmMessage.textContent = `Вы уверены, что хотите удалить пользователя "${login}"? Это действие необратимо.`;
     confirmModal.style.display = 'flex';
 }
 
-// --- ИЗМЕНЕНИЕ СТАТУСА ПОСТА ---
+// --- POST APPROVAL TOGGLE ---
 async function togglePostApproval(postId) {
     try {
         console.log(`🔄 Изменяем статус поста ${postId}`);
@@ -514,7 +513,7 @@ async function togglePostApproval(postId) {
     }
 }
 
-// --- УДАЛЕНИЕ ПОСТА ---
+// --- POST DELETE ---
 async function deletePost(postId) {
     try {
         console.log(`🗑️ Удаляем пост ${postId}`);
@@ -540,12 +539,12 @@ async function deletePost(postId) {
     }
 }
 
-// --- ЗАГРУЗКА ПОЛЬЗОВАТЕЛЕЙ ---
+// --- USERS LOAD ---
 async function loadUsers() {
     try {
         console.log('👥 Загружаем список пользователей...');
 
-        // 🔥 ИСПРАВЛЕНО: GET /users/:aid с заголовком user-id
+        // GET /users/:aid with user-id header
         const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
             headers: {
                 'user-id': userId
@@ -604,7 +603,7 @@ async function loadUsers() {
     }
 }
 
-// --- ЗАГРУЗКА ПОСТОВ ---
+// --- POSTS LOAD ---
 async function loadPosts() {
     try {
         console.log('📝 Загружаем список постов...');
@@ -636,11 +635,7 @@ async function loadPosts() {
     }
 }
 
-/*
- * Load data needed for admin function
- * PARAMETERS: None.
- * RETURNS: None.
- */
+// --- ADMIN DATA LOAD ---
 async function loadAdminData() {
     try {
         await loadUsers();
@@ -651,11 +646,7 @@ async function loadAdminData() {
     }
 }
 
-/*
- * Check admin access function
- * PARAMETERS: None.
- * RETURNS: TRUE, if user is admin, FALSE otherwise
- */
+// --- ADMIN ACCESS CHECK ---
 async function checkAdminAccess() {
     if (!userId) {
         alert('⛔ Доступ запрещен. Требуется авторизация.');
@@ -676,7 +667,7 @@ async function checkAdminAccess() {
             const data = await response.json();
             console.log('📥 Ответ от /access:', data);
 
-            // 🔥 Используем поле message (сервер возвращает { message: access })
+            // Using message field (server returns { message: access })
             if (data.message === 2) {
                 console.log('✅ Доступ разрешен (администратор)');
                 return true;
@@ -699,27 +690,23 @@ async function checkAdminAccess() {
         window.location.href = 'index.html';
         return false;
     }
-} /* End of 'checkAdminAccess' function */
+}
 
-/*
- * Initialization function
- * PARAMETERS: None.
- * RETURNS: None.
- */
+// --- INITIALIZATION ---
 async function initAdmin() {
     const isAdmin = await checkAdminAccess();
     if (!isAdmin) return;
 
     adminInfo.textContent = `👑 ${userLogin || userId} (Администратор)`;
 
-    // Загружаем данные
+    // Load data
     await loadAdminData();
 
-    // Навешиваем обработчики
+    // Setup event listeners
     setupEventListeners();
-} /* End of 'initAdmin' function */
+}
 
-// --- ЗАПУСК ---
+// --- START ---
 initAdmin();
 
 /*

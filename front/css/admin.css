@@ -1,9 +1,9 @@
 /* ============================================
-   СТИЛИ ДЛЯ ПАНЕЛИ АДМИНИСТРАТОРА
-   Файл: admin.css
+   ADMIN PANEL STYLES
+   File: admin.css
    ============================================ */
 
-/* ---------- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ---------- */
+/* ---------- GLOBAL SETTINGS ---------- */
 * {
     margin: 0;
     padding: 0;
@@ -17,7 +17,7 @@ body {
     min-height: 100vh;
 }
 
-/* ---------- ШАПКА ---------- */
+/* ---------- HEADER ---------- */
 header {
     background: white;
     padding: 16px 24px;
@@ -49,7 +49,7 @@ header {
     font-weight: 500;
 }
 
-/* ---------- ОБЩИЕ СТИЛИ ДЛЯ КНОПОК ---------- */
+/* ---------- COMMON BUTTON STYLES ---------- */
 .btn {
     padding: 8px 16px;
     border: none;
@@ -109,7 +109,7 @@ header {
     font-size: 12px;
 }
 
-/* ---------- СТАТИСТИКА ---------- */
+/* ---------- STATISTICS ---------- */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -137,7 +137,7 @@ header {
     margin-top: 4px;
 }
 
-/* ---------- СЕКЦИИ ---------- */
+/* ---------- SECTIONS ---------- */
 .admin-section {
     background: white;
     padding: 24px;
@@ -174,7 +174,7 @@ header {
     border-color: #4A90D9;
 }
 
-/* ---------- ТАБЛИЦЫ ---------- */
+/* ---------- TABLES ---------- */
 .table-wrapper {
     overflow-x: auto;
 }
@@ -207,14 +207,14 @@ tr:hover {
     background: #f8f9fa;
 }
 
-/* Текст в статусе загрузки */
+/* Loading status text */
 .loading-text {
     text-align: center;
     color: #888;
     padding: 40px !important;
 }
 
-/* ---------- СТАТУСЫ РОЛЕЙ ---------- */
+/* ---------- ROLE BADGES ---------- */
 .role-badge {
     display: inline-block;
     padding: 2px 10px;
@@ -238,7 +238,7 @@ tr:hover {
     color: #721c24;
 }
 
-/* ---------- СТАТУСЫ ПОСТОВ ---------- */
+/* ---------- POST STATUS BADGES ---------- */
 .status-badge {
     display: inline-block;
     padding: 2px 10px;
@@ -257,7 +257,7 @@ tr:hover {
     color: #856404;
 }
 
-/* ---------- КНОПКИ ДЕЙСТВИЙ В ТАБЛИЦАХ ---------- */
+/* ---------- ACTION BUTTONS IN TABLES ---------- */
 .action-buttons {
     display: flex;
     gap: 6px;
@@ -270,7 +270,7 @@ tr:hover {
     font-size: 12px;
 }
 
-/* ---------- МОДАЛЬНЫЕ ОКНА ---------- */
+/* ---------- MODAL WINDOWS ---------- */
 .modal {
     display: none;
     position: fixed;
@@ -347,7 +347,7 @@ tr:hover {
     margin-top: 20px;
 }
 
-/* ---------- СООБЩЕНИЯ ---------- */
+/* ---------- MESSAGES ---------- */
 .message {
     padding: 12px 16px;
     border-radius: 6px;
@@ -367,7 +367,7 @@ tr:hover {
     border: 1px solid #f5c6cb;
 }
 
-/* ---------- АДАПТИВНОСТЬ ---------- */
+/* ---------- RESPONSIVENESS ---------- */
 @media (max-width: 768px) {
     body {
         padding: 12px;
