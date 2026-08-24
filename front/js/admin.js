@@ -2,8 +2,26 @@
 // Admin panel
 // ============================================
 
-// API configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+// === API CONFIGURATION ===
+const API_CONFIG = {
+    // Backend port (default 3000)
+    port: 3000,
+    // API path
+    path: '/api'
+};
+
+const API_BASE_URL = (() => {
+    const { hostname, protocol } = window.location;
+
+    // If we are on localhost
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return `${protocol}//${hostname}:${API_CONFIG.port}${API_CONFIG.path}`;
+    }
+
+    // If we are on production
+    // You can use relative path or full URL
+    return API_CONFIG.path;
+})();
 
 // Getting user data from local storage
 const userId = localStorage.getItem('userId');
