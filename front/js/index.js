@@ -164,7 +164,6 @@ logoutBtn.addEventListener('click', () => {
 
 refreshPostsBtn.addEventListener('click', async () => {
     refreshPostsBtn.disabled = true;
-    refreshPostsBtn.classList.add('spinning');
     refreshPostsBtn.textContent = '⏳ Загрузка...';
 
     try {

@@ -483,16 +483,6 @@ p {
     cursor: not-allowed;
 }
 
-/* Spinning animation for refresh icon */
-#refresh-posts-btn.spinning {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
 /* ---------- RESPONSIVENESS FOR CONTROL PANEL ---------- */
 @media (max-width: 640px) {
     .controls-panel {
