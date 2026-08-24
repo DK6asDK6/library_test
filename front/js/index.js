@@ -425,8 +425,8 @@ createPostForm.addEventListener('submit', async (event) => {
     const content = document.getElementById('post-content').value.trim();
     const link = document.getElementById('post-link')?.value.trim() || '';
 
-    if (!title || !content) {
-        alert('❌ Заголовок и содержание обязательны');
+    if (!title) {
+        alert('❌ Заголовок обязателен');
         return;
     }
 
@@ -450,7 +450,7 @@ createPostForm.addEventListener('submit', async (event) => {
             sender_id: userId,
             sender_name: userLogin || 'Неизвестен',
             title: title,
-            text: content,
+            //text: content,
             access: 0
         };
 
@@ -459,13 +459,17 @@ createPostForm.addEventListener('submit', async (event) => {
             postData.link = link.trim();
         }
 
+        if (content && content.trim() !== '') {
+            postData.conent = content.trim();
+        }
+
         // Correct structure for Post model
         const requestData = {
             // Data for validation (in case server checks root fields)
             sender_id: userId,
             sender_name: userLogin || 'Неизвестен',
             title: title,
-            text: content,
+            //text: content,
             access: 0,
             // Data for post creation
             post: postData
@@ -474,6 +478,10 @@ createPostForm.addEventListener('submit', async (event) => {
         // Add link to root fields if present
         if (link && link.trim() !== '') {
             requestData.link = link.trim();
+        }
+
+        if (content && content.trim() !== '') {
+            requestData.content = content.trim();
         }
 
         console.log('📤 Данные запроса:', requestData);
