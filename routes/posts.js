@@ -134,7 +134,7 @@ router.get('/:uid', async (req, res, next) => {
             }
         }
 
-        return res.json(posts);
+        return res.json(posts.reverse());
     } catch (error) {
         console.error('Error in /:uid:', error);
         next(error);
