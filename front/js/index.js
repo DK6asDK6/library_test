@@ -265,16 +265,22 @@ function displayPosts(posts) {
 
         html += `
             <div class="post-card">
-                <h3>${escapeHtml(post.title) || 'Без заголовка'}</h3>
+                <!-- Заголовок кликабельный -->
+                <h3 class="post-title-clickable" data-post-id="${post._id}" style="cursor:pointer; color:#4A90D9; text-decoration:underline;">
+                    ${escapeHtml(post.title) || 'Без заголовка'}
+                </h3>
                 <p>${escapeHtml(post.text) || 'Нет содержания'}</p>
-                ${post.link ? `<a href="${escapeHtml(post.link)}" target="_blank">🔗 Ссылка</a>` : ''} 
+                ${post.link ? `<a href="${escapeHtml(post.link)}" target="_blank" class="post-link">🔗 ${escapeHtml(post.link)}</a>` : ''}
                 <div class="post-meta">
                     <span>🆔 ${post._id}</span>
                     <span>👤 ${escapeHtml(authorLogin)}</span>
                     <span class="status-badge ${statusClass}">${statusText}</span>
                 </div>
-                ${currentUserAccess === 2 ? `
-                    <div class="post-actions">
+                <div class="post-actions">
+                    <button class="btn btn-primary btn-sm open-post-btn" data-post-id="${post._id}">
+                        📖 Открыть
+                    </button>
+                    ${currentUserAccess === 2 ? `
                         <button class="btn ${isApproved ? 'btn-warning' : 'btn-success'}" 
                                 data-action="toggle-approve" 
                                 data-post-id="${post._id}">
@@ -285,13 +291,22 @@ function displayPosts(posts) {
                                 data-post-id="${post._id}">
                             Удалить
                         </button>
-                    </div>
-                ` : ''}
+                    ` : ''}
+                </div>
             </div>
         `;
     });
     html += '</div>';
     postsContainer.innerHTML = html;
+
+    // --- ОТКРЫТИЕ ПОСТА В НОВОЙ СТРАНИЦЕ ---
+    document.querySelectorAll('.open-post-btn, .post-title-clickable').forEach(el => {
+        el.addEventListener('click', () => {
+            const postId = el.dataset.postId;
+            // Открываем в новой вкладке
+            window.open(`post.html?id=${postId}`, '_blank');
+        });
+    });
 
     if (currentUserAccess === 2) {
         document.querySelectorAll('[data-action="toggle-approve"]').forEach(btn => {

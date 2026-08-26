@@ -1,0 +1,268 @@
+/* ============================================
+   POST VIEW PAGE STYLES
+   File: post.css
+   ============================================ */
+
+/* ---------- GLOBAL RESET ---------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+/* ---------- HEADER ---------- */
+header {
+    background: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+header h1 {
+    font-size: 24px;
+    color: #1a1a1a;
+}
+
+header div {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ---------- BUTTONS ---------- */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-primary {
+    background: #4A90D9;
+    color: white;
+}
+.btn-primary:hover {
+    background: #357ABD;
+}
+
+/* ---------- POST CONTAINER ---------- */
+#post-container {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ---------- LOADING / ERROR ---------- */
+.loading {
+    text-align: center;
+    padding: 60px;
+    color: #888;
+    font-size: 18px;
+}
+
+.error {
+    text-align: center;
+    padding: 60px;
+    color: #dc3545;
+    font-size: 18px;
+}
+
+/* ---------- POST CONTENT ---------- */
+.post-title {
+    font-size: 32px;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+    word-wrap: break-word;
+}
+
+.post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.post-meta span {
+    background: #f8f9fa;
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+.post-text {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 24px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.post-text .empty-text {
+    color: #999;
+    font-style: italic;
+}
+
+/* ---------- LINK ---------- */
+.post-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    padding: 8px 16px;
+    background: #e3f2fd;
+    border-radius: 6px;
+    color: #0d47a1;
+    text-decoration: none;
+    font-size: 14px;
+    word-break: break-all;
+}
+
+.post-link:hover {
+    background: #bbdefb;
+}
+
+/* ---------- FILES ---------- */
+.post-files {
+    margin: 16px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.file-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 8px;
+    max-width: 160px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.file-item:hover {
+    transform: scale(1.02);
+}
+
+.file-preview {
+    max-width: 100%;
+    max-height: 140px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.file-name {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+    word-break: break-all;
+}
+
+.file-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #4A90D9;
+    font-size: 13px;
+}
+
+.file-link:hover {
+    background: #e9ecef;
+}
+
+/* ---------- STATUS BADGE ---------- */
+.status-badge {
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-approved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-rejected {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* ---------- POST ACTIONS ---------- */
+.post-actions {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ---------- RESPONSIVENESS ---------- */
+@media (max-width: 640px) {
+    body {
+        padding: 12px;
+    }
+
+    #post-container {
+        padding: 20px;
+    }
+
+    .post-title {
+        font-size: 24px;
+    }
+
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    header div {
+        justify-content: center;
+    }
+
+    .post-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
