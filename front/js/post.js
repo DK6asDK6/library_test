@@ -162,7 +162,6 @@ function renderPost(post) {
         ${filesHtml}
         
         <div class="post-actions">
-            <a href="index.html" class="btn btn-secondary">← На главную</a>
             <button onclick="window.print()" class="btn btn-secondary">🖨️ Печать</button>
             <button onclick="window.close()" class="btn btn-secondary">✕ Закрыть</button>
         </div>
