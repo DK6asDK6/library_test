@@ -30,6 +30,7 @@ const userId = localStorage.getItem('userId');
 
 // --- DOM ELEMENTS ---
 const container = document.getElementById('post-container');
+const pName = document.getElementById('post-name');
 
 // --- LOAD POST ---
 async function loadPost() {
@@ -106,7 +107,7 @@ function renderPost(post) {
     // Ссылка
     let linkHtml = '';
     if (post.link) {
-        linkHtml = `<a href="${escapeHtml(post.link)}" target="_blank" class="post-link">🔗 ${escapeHtml(post.link)}</a>`;
+        linkHtml = `<iframe src=${escapeHtml(post.link)} width="100%" height="600px"  title="${escapeHtml(post.title)}"></iframe>`;
     }
 
     // Файлы
@@ -166,6 +167,7 @@ function renderPost(post) {
             <button onclick="window.close()" class="btn btn-secondary">✕ Закрыть</button>
         </div>
     `;
+    pName.innerHTML = `<h1 id="post-name">📄 Просмотр поста: "${escapeHtml(post.title)}"</h1>`;
 }
 
 // --- HELPER FUNCTIONS ---
