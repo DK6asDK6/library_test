@@ -90,14 +90,18 @@ router.get('/:uid', async (req, res, next) => {
         const userFilters = req.query.filters || null;
         let searchTitle = "";
         let wordConditions = [];
-
         if (userFilters && userFilters.title) {
             searchTitle = userFilters.title.trim();
             const wordVariants = getCorrectionVariants(searchTitle);
             wordConditions = wordVariants.map(variants => ({
-                $or: variants.map(variant => ({
+                $or: [
+                    variants.map(variant => ({
                     title: { $regex: variant, $options: 'i' }
-                }))
+                    })),
+                    variants.map(variant => ({
+                        text: { $regex: variant, $options: 'i' }
+                    }))
+                ]
             }));
         }
 
