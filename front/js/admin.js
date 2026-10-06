@@ -331,6 +331,9 @@ function renderPosts(posts) {
 
         const authorLogin = post.sender_id?.login || post.authorLogin || 'Неизвестен';
 
+        // remove later
+        console.log(post);
+
         html += `
             <tr>
                 <td><code>${post._id}</code></td>
