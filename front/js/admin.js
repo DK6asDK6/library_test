@@ -329,10 +329,7 @@ function renderPosts(posts) {
             statusText = '❌ Отклонен';
         }
 
-        const authorLogin = post.sender_id?.login || post.authorLogin || 'Неизвестен';
-
-        // remove later
-        console.log(post);
+        const authorLogin = post.sender_name || 'Неизвестен';
 
         html += `
             <tr>
