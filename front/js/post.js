@@ -142,8 +142,6 @@ function renderPost(post) {
         filesHtml += '</div>';
     }
 
-    // remove on release
-    console.log(post);
 
     // Контент
     const contentHtml = post.text

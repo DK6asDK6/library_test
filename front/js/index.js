@@ -269,7 +269,6 @@ function displayPosts(posts) {
                 <h3 class="post-title-clickable" data-post-id="${post._id}" style="cursor:pointer; color:#4A90D9; text-decoration:underline;">
                     ${escapeHtml(post.title) || 'Без заголовка'}
                 </h3>
-                <p>${escapeHtml(post.text) || 'Нет содержания'}</p>
                 ${post.link ? `<a href="${escapeHtml(post.link)}" target="_blank" class="post-link">🔗 ${escapeHtml(post.link)}</a>` : ''}
                 <div class="post-meta">
                     <span>🆔 ${post._id}</span>
