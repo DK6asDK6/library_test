@@ -465,7 +465,7 @@ createPostForm.addEventListener('submit', async (event) => {
             sender_id: userId,
             sender_name: userLogin || 'Неизвестен',
             title: title,
-            //text: content,
+            text: content,
             access: 0
         };
 
@@ -484,7 +484,7 @@ createPostForm.addEventListener('submit', async (event) => {
             sender_id: userId,
             sender_name: userLogin || 'Неизвестен',
             title: title,
-            //text: content,
+            text: content,
             access: 0,
             // Data for post creation
             post: postData
