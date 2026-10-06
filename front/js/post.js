@@ -142,6 +142,9 @@ function renderPost(post) {
         filesHtml += '</div>';
     }
 
+    // remove on release
+    console.log(post);
+
     // Контент
     const contentHtml = post.text
         ? escapeHtml(post.text)
@@ -163,7 +166,7 @@ function renderPost(post) {
         ${filesHtml}
         
         <div class="post-actions">
-            <button onclick="window.print()" class="btn btn-secondary">🖨️ Печать</button>
+            <button onclick="window.print()" class="btn btn-primary">🖨️ Печать</button>
             <button onclick="window.close()" class="btn btn-secondary">✕ Закрыть</button>
         </div>
     `;
