@@ -314,7 +314,7 @@ function renderPosts(posts) {
     }
 
     // Show last 20 posts
-    const recentPosts = posts.slice(-20).reverse();
+    const recentPosts = posts.slice(-20);
 
     let html = '';
     recentPosts.forEach(post => {
