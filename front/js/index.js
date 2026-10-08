@@ -34,6 +34,11 @@ let currentUserAccess = 0;
 
 console.log('👤 User data:', { userId, userLogin });
 
+// --- PAGINATION STATE ---
+let postsPerPage = 5;         // сколько постов на одной странице
+let currentPage = 1;          // текущая страница (1-based)
+let allPosts = [];            // полный список постов, полученный с сервера
+
 // --- DOM ELEMENTS ---
 const postsContainer = document.getElementById('posts-container');
 const guestControls = document.getElementById('guest-controls');
@@ -51,6 +56,11 @@ const cancelCreateBtn = document.getElementById('cancel-create-btn');
 const createPostForm = document.getElementById('create-post-form');
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
+const paginationPanel = document.getElementById('pagination-panel');
+const perpageInput = document.getElementById('perpage-input');
+const prevPageBtn = document.getElementById('prev-page-btn');
+const nextPageBtn = document.getElementById('next-page-btn');
+const pageInfo = document.getElementById('page-info');
 
 /**
  * Fetch user access level from server
@@ -247,13 +257,51 @@ async function loadPosts(searchString = '') {
             posts = [];
         }
 
-        displayPosts(posts);
+        // displayPosts(posts);
+
+        allPosts = posts;
+        currentPage = 1;
+        renderPage();
+
         // return posts;
     } catch (error) {
         console.error('❌ Ошибка загрузки постов:', error);
         postsContainer.innerHTML = `<div class="error">❌ ${error.message}</div>`;
         return {};
     }
+}
+
+/**
+ * Render current page of posts
+ * PARAMETERS: None
+ * RETURNS: None
+ */
+function renderPage() {
+    const total = allPosts.length;
+
+    if (total === 0) {
+        postsContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#888;">📭 Пока нет ни одного поста</div>';
+        paginationPanel.style.display = 'none';
+        return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(total / postsPerPage));
+
+    // Защита от выхода за границы
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const start = (currentPage - 1) * postsPerPage;
+    const end = start + postsPerPage;
+    const pagePosts = allPosts.slice(start, end);
+
+    displayPosts(pagePosts);
+
+    // Показываем панель и обновляем её состояние
+    paginationPanel.style.display = 'flex';
+    pageInfo.textContent = `Стр. ${currentPage} / ${totalPages}`;
+    prevPageBtn.disabled = currentPage <= 1;
+    nextPageBtn.disabled = currentPage >= totalPages;
 }
 
 /**
@@ -579,6 +627,45 @@ searchInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
         event.preventDefault();
         performSearch();
+    }
+});
+
+// --- PAGINATION HANDLERS ---
+prevPageBtn.addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage--;
+        renderPage();
+    }
+});
+
+nextPageBtn.addEventListener('click', () => {
+    const totalPages = Math.max(1, Math.ceil(allPosts.length / postsPerPage));
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderPage();
+    }
+});
+
+perpageInput.addEventListener('change', () => {
+    let value = parseInt(perpageInput.value, 10);
+
+    // Валидация: целое число от 1 до 50
+    if (isNaN(value) || value < 1) value = 1;
+    if (value > 50) value = 50;
+
+    perpageInput.value = value;
+    postsPerPage = value;
+
+    // Сбрасываем на первую страницу, чтобы не «улететь» за пределы
+    currentPage = 1;
+    renderPage();
+});
+
+// То же самое на Enter внутри поля
+perpageInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        perpageInput.blur();      // вызовет 'change'
     }
 });
 

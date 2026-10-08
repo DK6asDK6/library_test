@@ -574,14 +574,12 @@ p {
     background: #e9ecef;
 }
 
-/* ---------- SEARCH BAR ---------- */
 .search-container {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex: 1 1 260px;
+    flex: 1;
     min-width: 200px;
-    max-width: 480px;
 }
 
 .search-input {
@@ -590,14 +588,7 @@ p {
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
-    font-family: inherit;
-    color: #333;
-    background: #fff;
     transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.search-input::placeholder {
-    color: #aaa;
 }
 
 .search-input:focus {
@@ -606,15 +597,78 @@ p {
     box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
 }
 
-#search-btn {
-    padding: 8px 16px;
+/* ---------- PAGINATION ---------- */
+.pagination-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+    padding: 12px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    flex-wrap: wrap;
+}
+
+.pagination-perpage {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #555;
+}
+
+.perpage-input {
+    width: 70px;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #333;
+    text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.perpage-input:focus {
+    outline: none;
+    border-color: #4A90D9;
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.page-info {
+    font-size: 14px;
+    color: #555;
+    min-width: 90px;
+    text-align: center;
     white-space: nowrap;
 }
 
-/* Адаптив: на мобильных — на всю ширину */
+#prev-page-btn:disabled,
+#next-page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 @media (max-width: 640px) {
-    .search-container {
-        width: 100%;
-        max-width: none;
+    .pagination-panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pagination-perpage,
+    .pagination-controls {
+        justify-content: center;
+    }
+
+    .pagination-controls {
+        flex-wrap: wrap;
     }
 }

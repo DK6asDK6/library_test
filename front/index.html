@@ -55,6 +55,27 @@
   <div class="loading">Загрузка постов...</div>
 </div>
 
+<!-- Posts pagination -->
+<div id="pagination-panel" class="pagination-panel" style="display: none;">
+  <div class="pagination-perpage">
+    <label for="perpage-input">Постов на странице:</label>
+    <input
+            type="number"
+            id="perpage-input"
+            class="perpage-input"
+            min="1"
+            max="50"
+            value="5"
+    >
+  </div>
+
+  <div class="pagination-controls">
+    <button id="prev-page-btn" class="btn btn-secondary" type="button">← Назад</button>
+    <span id="page-info" class="page-info">Стр. 1 / 1</span>
+    <button id="next-page-btn" class="btn btn-secondary" type="button">Вперёд →</button>
+  </div>
+</div>
+
 <!-- Modal for post creating -->
 <div id="create-post-modal" class="modal">
   <div class="modal-content">
