@@ -1,67 +1,91 @@
 /*
  * Spell checking system file
  * IMPORTS:
- *  - spell-checker-js
+ *  - nspell (CJS)
+ *  - dictionary-en / dictionary-ru (ESM, грузятся через import())
  * EXPORTS:
- *  - initSpellChecker - spellchecker initialization function
- *  - getCorrectionVariants - main text spellcheck function
+ *  - initSpellChecker
+ *  - getCorrectionVariants
  */
 
-const spell = require('spell-checker-js')
+const nspell = require('nspell');
 
+let spellers = [];
 let isInitialized = false;
+
+/*
+ * Загрузка словаря: приводит ESM/CJS/callback-формы к единому виду { aff, dic }.
+ */
+async function loadDictionary(mod) {
+    // ESM-модуль: import() возвращает { default: ... }
+    let dict = mod?.default ?? mod;
+
+    // Функция-callback
+    if (typeof dict === 'function') {
+        dict = await new Promise((resolve, reject) => {
+            dict((err, result) => (err ? reject(err) : resolve(result)));
+        });
+    }
+
+    return dict;
+}
 
 /*
  * Spell checker initialization function
  * PARAMETERS: None.
- * RETURNS: None.
+ * RETURNS: Promise<void>.
  */
-function initSpellChecker() {
+async function initSpellChecker() {
     if (isInitialized) return;
 
-    try{
-        // Other languages can be loaded if needed
-        spell.load('en')
-        spell.check('ru');
-        isInitialized = true;
+    try {
+        // ← динамический import() вместо require()
+        const [enMod, ruMod] = await Promise.all([
+            import('dictionary-en'),
+            import('dictionary-ru'),
+        ]);
 
-        console.log('Dictionaries loaded (en, ru)')
+        const [en, ru] = await Promise.all([
+            loadDictionary(enMod),
+            loadDictionary(ruMod),
+        ]);
+
+        spellers = [nspell(en), nspell(ru)];
+        isInitialized = true;
+        console.log('Dictionaries loaded (en, ru)');
     } catch (err) {
         console.log('Error loading dictionaries', err);
         throw err;
     }
 }
-/*
- * End of 'initSpellChecker' function
- */
 
-/*
- * Get corrections for each word in query function
- * PARAMETERS:
- *  - query - words' array to be corrected
- * RETURNS:
- *  - variants - array of correction for each word
- */
+/* ... остальные функции без изменений ... */
+
+function isWordKnown(word) {
+    return spellers.some(sp => sp.correct(word));
+}
+
+function collectSuggestions(word) {
+    const seen = new Set();
+    const result = [];
+    for (const sp of spellers) {
+        const suggestions = sp.suggest(word) || [];
+        for (const s of suggestions) {
+            if (!seen.has(s)) { seen.add(s); result.push(s); }
+        }
+    }
+    return result;
+}
+
 function getCorrectionVariants(query) {
     const words = query.split(/[\s,.!?;:]+/).filter(w => w.length > 0);
     return words.map(word => {
-        if (spell.check(word).length === 0) {
-            return [word];
-        }
-        const suggestions = spell.suggest(word);
+        if (isWordKnown(word)) return [word];
+        const suggestions = collectSuggestions(word);
         const variants = suggestions.length > 0 ? suggestions.slice(0, 3) : [word];
-        if (!variants.includes(word)) {
-            variants.unshift(word);
-        }
+        if (!variants.includes(word)) variants.unshift(word);
         return variants;
     });
 }
-/*
- * End of 'getCorrectionVariants' function
- */
 
-module.exports = {initSpellChecker, getCorrectionVariants};
-
-/*
- * END OF 'spellcheck.js' FILE
- */
+module.exports = { initSpellChecker, getCorrectionVariants };

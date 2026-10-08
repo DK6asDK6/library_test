@@ -1,3 +1,6 @@
+const {createLogger} = require('../utils/logger');
+const log = createLogger('posts');
+
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
@@ -87,7 +90,9 @@ router.get('/:uid', async (req, res, next) => {
             }
         }
 
-        const userFilters = req.query.filters || null;
+        log.info('request query:', req.query);
+        const userFilters = JSON.parse(req.query.filters);
+        log.info('filters:', userFilters);
         let searchTitle = "";
         let wordConditions = [];
         if (userFilters && userFilters.title) {
@@ -95,10 +100,10 @@ router.get('/:uid', async (req, res, next) => {
             const wordVariants = getCorrectionVariants(searchTitle);
             wordConditions = wordVariants.map(variants => ({
                 $or: [
-                    variants.map(variant => ({
+                    ...variants.map(variant => ({
                     title: { $regex: variant, $options: 'i' }
                     })),
-                    variants.map(variant => ({
+                    ...variants.map(variant => ({
                         text: { $regex: variant, $options: 'i' }
                     }))
                 ]
@@ -140,6 +145,7 @@ router.get('/:uid', async (req, res, next) => {
 
         return res.json(posts.reverse());
     } catch (error) {
+        log.error('have an error:', error);
         console.error('Error in /:uid:', error);
         next(error);
     }

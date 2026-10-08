@@ -1,3 +1,6 @@
+const {createLogger} = require('../utils/logger');
+const log = createLogger('posts');
+
 /*
  * User API managing file (route 'api/users/...')
  * IMPORTS:

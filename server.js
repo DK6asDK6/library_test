@@ -20,8 +20,15 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+// logger
+const {createLogger} = require('./utils/logger');
+const log = createLogger('server');
+
+// logger test
+log.info('Logger started');
+
 // Spellchecker initialization
-require('./middleware/spellcheck').initSpellChecker();
+const {initSpellChecker} = require('./middleware/spellcheck');
 
 const userRoutes = require('./routes/users');
 const postRoutes = require('./routes/posts');
@@ -55,9 +62,15 @@ app.get('/', (req, res) => {
 
 // Server launching
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+
+(async () => {
+    await initSpellChecker();
+
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+})();
+
 
 /*
  * END OF 'server.js' FILE

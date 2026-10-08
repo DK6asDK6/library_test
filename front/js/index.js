@@ -49,6 +49,8 @@ const lastUpdateEl = document.getElementById('last-update');
 const modal = document.getElementById('create-post-modal');
 const cancelCreateBtn = document.getElementById('cancel-create-btn');
 const createPostForm = document.getElementById('create-post-form');
+const searchInput = document.getElementById('search-input');
+const searchBtn = document.getElementById('search-btn');
 
 /**
  * Fetch user access level from server
@@ -184,16 +186,28 @@ refreshPostsBtn.addEventListener('click', async () => {
 
 /**
  * Load posts from server
- * PARAMETERS: None
- * RETURNS: None
+ * PARAMETERS: searchString: optional
+ * RETURNS: Posts' array
  */
-async function loadPosts() {
+async function loadPosts(searchString = '') {
     postsContainer.innerHTML = '<div class="loading">Загрузка постов...</div>';
 
     try {
         let url;
         const headers = {};
 
+        // need additional filters {title: searchString}
+        console.log(searchString);
+
+        const filters = searchString ? {title: searchString} : {};
+        const filtersQuery = new URLSearchParams({filters: JSON.stringify(filters)}).toString();
+        url = `${API_BASE_URL}/posts/${userId ? userId : '0'}?${filtersQuery}`;
+        if (userId){
+            headers['user-id'] = userId;
+            headers['user-access'] = currentUserAccess;
+        }
+
+        /**
         if (userId) {
             // Authenticated user — pass their ID
             const filters = {};
@@ -208,6 +222,7 @@ async function loadPosts() {
             url = `${API_BASE_URL}/posts/0?${filtersQuery}`;
             // No user-id header for guests
         }
+         */
 
         console.log('📤 Загружаем посты:', url);
 
@@ -233,9 +248,11 @@ async function loadPosts() {
         }
 
         displayPosts(posts);
+        // return posts;
     } catch (error) {
         console.error('❌ Ошибка загрузки постов:', error);
         postsContainer.innerHTML = `<div class="error">❌ ${error.message}</div>`;
+        return {};
     }
 }
 
@@ -543,6 +560,28 @@ createPostForm.addEventListener('submit', async (event) => {
         submitBtn.textContent = originalText;
     }
 });
+
+/*
+ * Search function
+ * PARAMETERS: None
+ * RETURNS: Re-rendered fields
+ */
+async function performSearch(){
+    const query = searchInput.value;
+    await loadPosts(query);
+    console.log('🔍 Поисковый запрос:', query);
+    // ... search for any
+}
+
+searchBtn.addEventListener('click', performSearch);
+
+searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        performSearch();
+    }
+});
+
 
 // --- STARTUP ---
 async function init() {

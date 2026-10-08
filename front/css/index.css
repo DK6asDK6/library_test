@@ -573,3 +573,48 @@ p {
 .file-link:hover {
     background: #e9ecef;
 }
+
+/* ---------- SEARCH BAR ---------- */
+.search-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 260px;
+    min-width: 200px;
+    max-width: 480px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 8px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #333;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input::placeholder {
+    color: #aaa;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #4A90D9;
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+}
+
+#search-btn {
+    padding: 8px 16px;
+    white-space: nowrap;
+}
+
+/* Адаптив: на мобильных — на всю ширину */
+@media (max-width: 640px) {
+    .search-container {
+        width: 100%;
+        max-width: none;
+    }
+}
