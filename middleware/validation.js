@@ -35,6 +35,9 @@ const validatePost = [
     body('access')
         .optional()
         .isInt().withMessage('access must be a number'),
+    body('parentId')
+        .optional()
+        .isMongoId().withMessage('parentId must be an mongoDB Id'),
 ]
 
 const validationHandler = (req, res, next) => {

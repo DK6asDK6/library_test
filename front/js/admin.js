@@ -626,11 +626,7 @@ async function loadPosts() {
     try {
         console.log('📝 Загружаем список постов...');
 
-        const response = await fetch(`${API_BASE_URL}/posts/${userId}`, {
-            headers: {
-                'user-id': userId
-            }
-        });
+        const response = await fetch(`${API_BASE_URL}/posts/${userId}`, {});
 
         if (!response.ok) {
             throw new Error(`Ошибка: ${response.status}`);
