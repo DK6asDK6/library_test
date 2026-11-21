@@ -161,7 +161,7 @@ function setupEventListeners() {
             const result = await response.json();
             console.log('✅ Права изменены:', result);
 
-            const roleText = newAccess === 2 ? 'Администратор' : newAccess === 1 ? 'Модератор' : 'Гость';
+            const roleText = newAccess === 2 ? 'Администратор' : newAccess === 1 ? 'Участник' : 'Гость';
             alert(`✅ Права пользователя "${userLogin}" изменены на "${roleText}"`);
 
             editUserModal.style.display = 'none';
@@ -380,7 +380,7 @@ function renderPosts(posts) {
 // --- HELPER FUNCTIONS ---
 function getRoleText(access) {
     if (access === 2) return 'Администратор';
-    if (access === 1) return 'Модератор';
+    if (access === 1) return 'Участник';
     return 'Гость';
 }
 

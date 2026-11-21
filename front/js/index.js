@@ -150,7 +150,7 @@ async function updateUI() {
 
         let roleText = 'Гость';
         if (currentUserAccess === 2) roleText = 'Администратор';
-        else if (currentUserAccess === 1) roleText = 'Модератор';
+        else if (currentUserAccess === 1) roleText = 'Участник';
         userAccessDisplay.textContent = `Роль: ${roleText}`;
 
         adminLink.style.display = currentUserAccess === 2 ? 'inline-block' : 'none';

@@ -169,7 +169,7 @@ form.addEventListener('submit', async (event) => {
                 localStorage.setItem('userLogin', data.user.login);
                 localStorage.removeItem('userAccess');
 
-                alert('✅ Регистрация прошла успешно! Вы автоматически получили права модератора.');
+                alert('✅ Регистрация прошла успешно!');
                 window.location.href = 'index.html';
             } else {
                 console.error('❌ Неверный формат ответа при регистрации:', data);
