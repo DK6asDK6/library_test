@@ -123,7 +123,7 @@ The repository is organised as follows:
 
 ```
 .
-├── client/                     # (In development) Frontend application
+├── front/                     # (In development) Frontend application
 ├── middleware/
 │   ├── spellcheck.js           # Handles spellchecker functions
 │   ├── upload.js               # Handles file uploads, enforces file size/type limits
