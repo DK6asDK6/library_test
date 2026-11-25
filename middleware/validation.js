@@ -22,10 +22,10 @@ const validateUser = [
 ];
 
 const validatePost = [
-  body('title')
-      .trim().escape()
-      .notEmpty().withMessage('title is required')
-      .isLength({max: 200}).withMessage('title must be at maximum of 200 characters'),
+    body('title')
+        .trim().escape()
+        .notEmpty().withMessage('title is required')
+        .isLength({max: 200}).withMessage('title must be at maximum of 200 characters'),
     body('text')
         .optional()
         .trim().escape(),
@@ -38,6 +38,19 @@ const validatePost = [
     body('parentId')
         .optional()
         .isMongoId().withMessage('parentId must be an mongoDB Id'),
+    // Tags validation: array of {category, value}
+    body('tags')
+        .optional()
+        .isArray().withMessage('tags must be an array'),
+    body('tags.*.category')
+        .optional()
+        .isIn(['materialType', 'format', 'roadUser', 'topic', 'location'])
+        .withMessage('Invalid tag category'),
+    body('tags.*.value')
+        .optional()
+        .trim()
+        .isLength({min: 1, max: 50})
+        .withMessage('Tag value must be 1-50 characters'),
 ]
 
 const validationHandler = (req, res, next) => {
@@ -52,9 +65,9 @@ const validationHandler = (req, res, next) => {
 };
 
 module.exports = {
-  validateUser,
-  validatePost,
-  validationHandler
+    validateUser,
+    validatePost,
+    validationHandler
 };
 
 /*

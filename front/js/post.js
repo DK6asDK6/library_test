@@ -148,6 +148,17 @@ function renderPost(post) {
         ? escapeHtml(post.text)
         : '<span class="empty-text">(Пост без содержания)</span>';
 
+    // Tags
+    let tagsHtml = '';
+    if (Array.isArray(post.tags) && post.tags.length > 0) {
+        tagsHtml = '<div class="post-tags">' +
+            post.tags.map(t => {
+                const catLabel = TAG_CATEGORIES[t.category]?.label || t.category;
+                return `<span class="post-tag" title="${escapeHtml(catLabel)}">${escapeHtml(t.value)}</span>`;
+            }).join('') +
+            '</div>';
+    }
+
     container.innerHTML = `
         <h1 class="post-title">${escapeHtml(post.title) || 'Без заголовка'}</h1>
         
@@ -158,6 +169,7 @@ function renderPost(post) {
             <span class="status-badge ${statusClass}">${statusText}</span>
         </div>
         
+        ${tagsHtml}
         <div class="post-text">${contentHtml}</div>
         
         ${linkHtml}

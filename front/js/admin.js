@@ -329,12 +329,17 @@ function renderPosts(posts) {
             statusText = '❌ Отклонен';
         }
 
+        const tagsStr = Array.isArray(post.tags) && post.tags.length > 0
+            ? post.tags.map(t => `<span class="post-tag">${escapeHtml(t.value)}</span>`).join(' ')
+            : '<span style="color:#999">—</span>';
+
         const authorLogin = post.sender_name || 'Неизвестен';
 
         html += `
             <tr>
                 <td><code>${post._id}</code></td>
                 <td><strong>${escapeHtml(post.title) || 'Без заголовка'}</strong></td>
+                <td>${tagsStr}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td>${escapeHtml(authorLogin)}</td>
                 <td>

@@ -17,6 +17,7 @@ const mongoose = require('mongoose');
  *  - text - inner text (if exists).
  *  - link - link to Web Archive page (if exists)
  *  - files - array of files' metadata
+ *  - tags - array of tag objects {category, value}
  */
 const postSchema = new mongoose.Schema({
     sender_id: {
@@ -42,6 +43,18 @@ const postSchema = new mongoose.Schema({
         mimeType: String,     // MIME-type
         size: Number,         // Size (in bytes)
         url: String,          // Public URL
+    }],
+    tags:[{
+        category: {
+            type: String,
+            required: true,
+            enum: ['materialType', 'format', 'roadUser', 'topic', 'location']
+        },
+        value: {
+            type: String,
+            required: true,
+            maxlength: [50, 'Tag value must have less than 50 characters']
+        }
     }],
     access: {
         type: Number,

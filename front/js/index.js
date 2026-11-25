@@ -38,6 +38,8 @@ console.log('👤 User data:', { userId, userLogin });
 let postsPerPage = 5;         // сколько постов на одной странице
 let currentPage = 1;          // текущая страница (1-based)
 let allPosts = [];            // полный список постов, полученный с сервера
+let selectedTags = [];        // [{category, value}]
+let activeTagFilters = [];    // for filtering on main page
 
 // --- DOM ELEMENTS ---
 const postsContainer = document.getElementById('posts-container');
@@ -134,6 +136,72 @@ function updateLastUpdateTime() {
 }
 
 /**
+ * Render tag filter chips
+ * PARAMETERS: None
+ * RETURNS: None
+ */
+function renderTagFilter() {
+    const body = document.getElementById('tag-filter-body');
+    if (!body) return;
+
+    let html = '';
+    Object.entries(TAG_CATEGORIES).forEach(([key, cfg]) => {
+        html += `
+            <div class="tag-category">
+                <span class="tag-category-label">${escapeHtml(cfg.label)}</span>
+                <div class="tag-chips">
+                    ${cfg.values.map(v => {
+            const isSel = activeTagFilters.includes(v);
+            return `<span class="tag-chip ${isSel ? 'selected' : ''}"
+                                      data-value="${escapeHtml(v)}">${escapeHtml(v)}</span>`;
+        }).join('')}
+                </div>
+            </div>
+        `;
+    });
+    html += `
+        <div class="tag-filter-actions">
+            <button id="apply-tags-btn" class="btn btn-primary btn-sm">Применить фильтр</button>
+            <button id="clear-tags-btn" class="btn btn-secondary btn-sm">Сбросить</button>
+        </div>
+    `;
+    body.innerHTML = html;
+
+    body.querySelectorAll('.tag-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const v = chip.dataset.value;
+            const idx = activeTagFilters.indexOf(v);
+            if (idx >= 0) {
+                activeTagFilters.splice(idx, 1);
+                chip.classList.remove('selected');
+            } else {
+                activeTagFilters.push(v);
+                chip.classList.add('selected');
+            }
+        });
+    });
+
+    document.getElementById('apply-tags-btn').addEventListener('click', async () => {
+        await loadPosts(searchInput.value);
+    });
+    document.getElementById('clear-tags-btn').addEventListener('click', async () => {
+        activeTagFilters = [];
+        renderTagFilter();
+        await loadPosts(searchInput.value);
+    });
+}
+
+// Toggle collapse
+document.getElementById('tag-filter-header')?.addEventListener('click', () => {
+    const body = document.getElementById('tag-filter-body');
+    const toggle = document.getElementById('tag-filter-toggle');
+    if (!body) return;
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'flex';
+    toggle.textContent = isOpen ? 'Развернуть ▾' : 'Свернуть ▴';
+});
+
+/**
  * Update user interface based on access level
  * PARAMETERS: None
  * RETURNS: None
@@ -205,11 +273,14 @@ async function loadPosts(searchString = '') {
     try {
         let url;
         const headers = {};
+        const filters = {};
+
+        if (searchString) filters.title = searchString;
+        if (activeTagFilters.length > 0) filters.tags = activeTagFilters;
 
         // need additional filters {title: searchString}
         console.log(searchString);
 
-        const filters = searchString ? {title: searchString} : {};
         const filtersQuery = new URLSearchParams({filters: JSON.stringify(filters)}).toString();
         url = `${API_BASE_URL}/posts/${userId ? userId : '0'}?${filtersQuery}`;
         if (userId){
@@ -305,6 +376,50 @@ function renderPage() {
 }
 
 /**
+ * Render tag chips editor inside create-post modal
+ * PARAMETERS: None
+ * RETURNS: None
+ */
+function renderTagsEditor() {
+    const editor = document.getElementById('tags-editor');
+    if (!editor) return;
+
+    let html = '';
+    Object.entries(TAG_CATEGORIES).forEach(([key, cfg]) => {
+        html += `
+            <div class="tag-category" data-category="${key}">
+                <span class="tag-category-label">${escapeHtml(cfg.label)}</span>
+                <div class="tag-chips">
+                    ${cfg.values.map(v => {
+            const isSel = selectedTags.some(t => t.category === key && t.value === v);
+            return `<span class="tag-chip ${isSel ? 'selected' : ''}" 
+                                      data-category="${key}" 
+                                      data-value="${escapeHtml(v)}">${escapeHtml(v)}</span>`;
+        }).join('')}
+                </div>
+            </div>
+        `;
+    });
+    editor.innerHTML = html;
+
+    // Chip click toggles selection
+    editor.querySelectorAll('.tag-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const category = chip.dataset.category;
+            const value = chip.dataset.value;
+            const idx = selectedTags.findIndex(t => t.category === category && t.value === value);
+            if (idx >= 0) {
+                selectedTags.splice(idx, 1);
+                chip.classList.remove('selected');
+            } else {
+                selectedTags.push({ category, value });
+                chip.classList.add('selected');
+            }
+        });
+    });
+}
+
+/**
  * Display posts in the grid
  * PARAMETERS:
  *  - posts: array of post objects
@@ -328,6 +443,14 @@ function displayPosts(posts) {
             post.authorLogin ||
             'Неизвестен';
 
+        // Tags block
+        let tagsHtml = '';
+        if (Array.isArray(post.tags) && post.tags.length > 0) {
+            tagsHtml = '<div class="post-tags">' +
+                post.tags.map(t => `<span class="post-tag">${escapeHtml(t.value)}</span>`).join('') +
+                '</div>';
+        }
+
         html += `
             <div class="post-card">
                 <!-- Заголовок кликабельный -->
@@ -335,6 +458,7 @@ function displayPosts(posts) {
                     ${escapeHtml(post.title) || 'Без заголовка'}
                 </h3>
                 ${post.link ? `<a href="${escapeHtml(post.link)}" target="_blank" class="post-link">🔗 ${escapeHtml(post.link)}</a>` : ''}
+                ${tagsHtml}
                 <div class="post-meta">
                     <span>🆔 ${post._id}</span>
                     <span>👤 ${escapeHtml(authorLogin)}</span>
@@ -485,6 +609,10 @@ createPostBtn.addEventListener('click', () => {
     document.getElementById('post-title').value = '';
     document.getElementById('post-content').value = '';
     document.getElementById('post-link').value = '';
+
+    // Reset tags
+    selectedTags = [];
+    renderTagsEditor();
 });
 
 cancelCreateBtn.addEventListener('click', () => modal.style.display = 'none');
@@ -530,7 +658,8 @@ createPostForm.addEventListener('submit', async (event) => {
             sender_name: userLogin || 'Неизвестен',
             title: title,
             text: content,
-            access: 0
+            access: 0,
+            tags: selectedTags   // ← добавляем
         };
 
         // Add link only if not empty
@@ -672,6 +801,7 @@ perpageInput.addEventListener('keydown', (event) => {
 
 // --- STARTUP ---
 async function init() {
+    renderTagFilter();
     await updateUI();
     await loadPosts();
     updateLastUpdateTime();
